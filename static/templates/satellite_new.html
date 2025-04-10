@@ -1,0 +1,827 @@
+{% extends "base.html" %}
+
+{% block title %}Satellite Imagery | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block head_extras %}
+<!-- Leaflet Draw Plugin -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<!-- Leaflet Geometry Util -->
+<script src="https://unpkg.com/leaflet-geometryutil@0.10.0/src/leaflet.geometryutil.js"></script>
+<style>
+    .satellite-hero-banner {
+        background-attachment: fixed;
+    }
+    .ndvi-gradient {
+        height: 20px;
+        border-radius: 4px;
+        background: linear-gradient(to right, red, yellow, #00ff00);
+    }
+    .area-label {
+        background: transparent;
+        border: none;
+    }
+    .area-text {
+        background-color: rgba(92, 184, 92, 0.8);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .card {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .btn-success {
+        background-color: #5cb85c;
+    }
+    .btn-success:hover {
+        background-color: #4cae4c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="satellite-hero-banner mb-4 rounded" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1569385210018-127685230669?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80') center/cover no-repeat; height: 250px; position: relative;">
+    <div class="container h-100">
+        <div class="d-flex align-items-center justify-content-center flex-column h-100 text-white text-center">
+            <h1 class="display-4 fw-bold translate" data-key="satellite_imagery">Satellite Imagery Analysis</h1>
+            <p class="lead translate" data-key="satellite_desc_enhanced">Monitor and analyze your farm using multi-spectral satellite imagery for better crop management</p>
+            <a href="#satellite-form" class="btn btn-success btn-lg mt-3">
+                <i class="fas fa-satellite me-2"></i>
+                <span class="translate" data-key="get_started">Get Started</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4" id="satellite-form">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-satellite me-2"></i>
+                    <span class="translate" data-key="satellite_imagery">Satellite Imagery Analysis</span>
+                </h2>
+                <p class="card-text translate" data-key="satellite_desc">Monitor your crops using multi-spectral satellite imagery</p>
+                
+                <!-- Farm and Location Selection -->
+                <div class="row mb-3">
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="farmSelect" class="form-label translate" data-key="select_farm">Select Farm</label>
+                            <select class="form-select" id="farmSelect">
+                                <option value="1" selected>Maize Farm (2.5 ha)</option>
+                                <option value="2">Rice Paddy (1.8 ha)</option>
+                                <option value="3">Mixed Crops (3.2 ha)</option>
+                                <option value="new">+ Add New Farm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="farmLocation" class="form-label translate" data-key="farm_location">Farm Location</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="farmLocation" placeholder="Enter coordinates or address" value="0.0236, 37.9062">
+                                <button class="btn btn-outline-primary" id="detectLocation" type="button" title="Use my current location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted translate" data-key="location_help">Enter coordinates (lat, long) or search for a location</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="farmSize" class="form-label translate" data-key="farm_size">Farm Size (ha)</label>
+                            <input type="number" class="form-control" id="farmSize" placeholder="Size in hectares" value="2.5" min="0.1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="dateRangeSelect" class="form-label translate" data-key="date_range">Date Range</label>
+                            <select class="form-select" id="dateRangeSelect">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="180">Last 6 months</option>
+                                <option value="365">Last year</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="imageTypeSelect" class="form-label translate" data-key="image_type">Image Type</label>
+                            <select class="form-select" id="imageTypeSelect">
+                                <option value="ndvi" selected>NDVI (Vegetation Health)</option>
+                                <option value="true_color">True Color</option>
+                                <option value="false_color">False Color</option>
+                                <option value="moisture">Moisture Index</option>
+                                <option value="temperature">Surface Temperature</option>
+                                <option value="ndwi">Water Index (NDWI)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="satelliteSource" class="form-label translate" data-key="satellite_source">Satellite Source</label>
+                            <select class="form-select" id="satelliteSource">
+                                <option value="sentinel2" selected>Sentinel-2 (10m resolution)</option>
+                                <option value="landsat8">Landsat 8 (30m resolution)</option>
+                                <option value="modis">MODIS (250m resolution)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <button id="analyzeBtn" class="btn btn-success">
+                            <i class="fas fa-satellite-dish me-2"></i>
+                            <span class="translate" data-key="analyze_satellite_data">Analyze Satellite Data</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Satellite Image and Map -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 translate" data-key="satellite_view">Satellite View</h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" id="mapView">
+                        <i class="fas fa-map"></i> 
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="imageView">
+                        <i class="fas fa-image"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="satelliteMap" style="height: 400px;"></div>
+                <div id="satelliteImage" class="text-center d-none">
+                    <!-- Placeholder for satellite image -->
+                    <img src="https://via.placeholder.com/800x400?text=Satellite+Image+Placeholder" alt="Satellite Image" class="img-fluid rounded">
+                </div>
+                
+                <!-- Image Date and Source -->
+                <div class="image-info mt-2 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">
+                        <i class="far fa-calendar-alt me-1"></i> <span id="imageDate">2023-07-15</span>
+                    </span>
+                    <span class="text-muted small">
+                        <i class="fas fa-satellite me-1"></i> <span id="imageSource">Sentinel-2</span>
+                    </span>
+                </div>
+                
+                <!-- NDVI Color Scale -->
+                <div id="ndviScale" class="mt-3">
+                    <p class="text-center mb-1 small translate" data-key="ndvi_scale">NDVI Scale</p>
+                    <div class="ndvi-scale-bar d-flex align-items-center">
+                        <span class="small me-2 translate" data-key="low">Low</span>
+                        <div class="ndvi-gradient flex-grow-1"></div>
+                        <span class="small ms-2 translate" data-key="high">High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Crop Health Analysis -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="crop_health_analysis">Crop Health Analysis</h5>
+            </div>
+            <div class="card-body">
+                <!-- NDVI Value -->
+                <div class="ndvi-value text-center mb-4">
+                    <h6 class="text-muted translate" data-key="current_ndvi">Current NDVI</h6>
+                    <h2>{{ satellite_data.current_ndvi|round(2) }}</h2>
+                    <p class="mb-0">
+                        {% if satellite_data.current_ndvi >= 0.7 %}
+                        <span class="badge bg-success translate" data-key="excellent">Excellent</span>
+                        {% elif satellite_data.current_ndvi >= 0.5 %}
+                        <span class="badge bg-success translate" data-key="good">Good</span>
+                        {% elif satellite_data.current_ndvi >= 0.3 %}
+                        <span class="badge bg-warning translate" data-key="fair">Fair</span>
+                        {% else %}
+                        <span class="badge bg-danger translate" data-key="poor">Poor</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <!-- Crop Health Breakdown -->
+                <h6 class="text-muted mb-2 translate" data-key="crop_health_breakdown">Crop Health Breakdown</h6>
+                <div class="crop-health-breakdown mb-4">
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ satellite_data.crop_health.excellent_percent }}%" 
+                            aria-valuenow="{{ satellite_data.crop_health.excellent_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="excellent">Excellent</span> {{ satellite_data.crop_health.excellent_percent|round|int }}%
+                        </div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ satellite_data.crop_health.good_percent }}%" 
+                            aria-valuenow="{{ satellite_data.crop_health.good_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="good">Good</span> {{ satellite_data.crop_health.good_percent|round|int }}%
+                        </div>
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ satellite_data.crop_health.fair_percent }}%" 
+                            aria-valuenow="{{ satellite_data.crop_health.fair_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="fair">Fair</span> {{ satellite_data.crop_health.fair_percent|round|int }}%
+                        </div>
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ satellite_data.crop_health.poor_percent }}%" 
+                            aria-valuenow="{{ satellite_data.crop_health.poor_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="poor">Poor</span> {{ satellite_data.crop_health.poor_percent|round|int }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Water Stress Analysis -->
+                <h6 class="text-muted mb-2 translate" data-key="water_stress_analysis">Water Stress Analysis</h6>
+                <div class="water-stress-analysis mb-4">
+                    <div class="alert 
+                        {% if satellite_data.water_stress.overall_status == 'No Water Stress' %}
+                        alert-success
+                        {% elif satellite_data.water_stress.overall_status == 'Low Water Stress' %}
+                        alert-info
+                        {% elif satellite_data.water_stress.overall_status == 'Moderate Water Stress' %}
+                        alert-warning
+                        {% else %}
+                        alert-danger
+                        {% endif %}">
+                        <i class="fas fa-tint me-2"></i>
+                        <span class="translate" data-key="{{ satellite_data.water_stress.overall_status|lower|replace(' ', '_') }}">
+                            {{ satellite_data.water_stress.overall_status }}
+                        </span>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ satellite_data.water_stress.no_stress_percent }}%" 
+                            aria-valuenow="{{ satellite_data.water_stress.no_stress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="no_stress">No Stress</span> {{ satellite_data.water_stress.no_stress_percent|round|int }}%
+                        </div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ satellite_data.water_stress.low_percent }}%" 
+                            aria-valuenow="{{ satellite_data.water_stress.low_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="low_stress">Low</span> {{ satellite_data.water_stress.low_percent|round|int }}%
+                        </div>
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ satellite_data.water_stress.moderate_percent }}%" 
+                            aria-valuenow="{{ satellite_data.water_stress.moderate_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="moderate_stress">Moderate</span> {{ satellite_data.water_stress.moderate_percent|round|int }}%
+                        </div>
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ satellite_data.water_stress.severe_percent }}%" 
+                            aria-valuenow="{{ satellite_data.water_stress.severe_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="severe_stress">Severe</span> {{ satellite_data.water_stress.severe_percent|round|int }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Recommendations -->
+                <h6 class="text-muted mb-2 translate" data-key="recommended_actions">Recommended Actions</h6>
+                <ul class="list-group">
+                    {% if satellite_data.water_stress.overall_status == 'Moderate Water Stress' or satellite_data.water_stress.overall_status == 'Severe Water Stress' %}
+                    <li class="list-group-item">
+                        <i class="fas fa-tint text-primary me-2"></i>
+                        <span class="translate" data-key="irrigation_recommended">Irrigation recommended in areas with water stress</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% if satellite_data.crop_health.poor_percent > 20 %}
+                    <li class="list-group-item">
+                        <i class="fas fa-search text-warning me-2"></i>
+                        <span class="translate" data-key="inspect_poor_areas">Inspect areas with poor crop health</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% if satellite_data.crop_health.fair_percent > 30 %}
+                    <li class="list-group-item">
+                        <i class="fas fa-flask text-info me-2"></i>
+                        <span class="translate" data-key="consider_fertilizer">Consider additional nutrients in areas with fair crop health</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- NDVI Trend Chart -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="ndvi_trend">NDVI Trend Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ndviTrendChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Zonal Statistics -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="zonal_statistics">Zonal Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="translate" data-key="zone">Zone</th>
+                                <th class="translate" data-key="average_ndvi">Average NDVI</th>
+                                <th class="translate" data-key="health_status">Health Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Zone 1 (North)</td>
+                                <td>0.76</td>
+                                <td><span class="badge bg-success translate" data-key="excellent">Excellent</span></td>
+                            </tr>
+                            <tr>
+                                <td>Zone 2 (East)</td>
+                                <td>0.68</td>
+                                <td><span class="badge bg-success translate" data-key="good">Good</span></td>
+                            </tr>
+                            <tr>
+                                <td>Zone 3 (South)</td>
+                                <td>0.58</td>
+                                <td><span class="badge bg-info translate" data-key="good">Good</span></td>
+                            </tr>
+                            <tr>
+                                <td>Zone 4 (West)</td>
+                                <td>0.45</td>
+                                <td><span class="badge bg-warning translate" data-key="fair">Fair</span></td>
+                            </tr>
+                            <tr>
+                                <td>Zone 5 (Central)</td>
+                                <td>0.72</td>
+                                <td><span class="badge bg-success translate" data-key="excellent">Excellent</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Download Options -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="download_options">Download Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <button id="downloadImageBtn" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-image me-2"></i>
+                            <span class="translate" data-key="download_image">Download Image</span>
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="downloadNdviBtn" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-table me-2"></i>
+                            <span class="translate" data-key="download_ndvi">Download NDVI Data</span>
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="downloadReportBtn" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            <span class="translate" data-key="download_report">Download Report</span>
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="downloadShapefileBtn" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-map me-2"></i>
+                            <span class="translate" data-key="download_shapefile">Download Shapefile</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Satellite Map
+    const satelliteMap = L.map('satelliteMap').setView([0.0236, 37.9062], 13);
+    
+    // Add satellite tile layer
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19
+    }).addTo(satelliteMap);
+    
+    // Add OpenStreetMap as an alternative layer
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    });
+    
+    // Add layer control
+    const baseLayers = {
+        "Satellite": satelliteLayer,
+        "Street Map": osmLayer
+    };
+    
+    L.control.layers(baseLayers).addTo(satelliteMap);
+    
+    // Add scale
+    L.control.scale({imperial: false}).addTo(satelliteMap);
+    
+    // Initialize drawing tools
+    let drawnItems = new L.FeatureGroup();
+    satelliteMap.addLayer(drawnItems);
+    
+    const drawControl = new L.Control.Draw({
+        draw: {
+            polyline: false,
+            circle: false,
+            circlemarker: false,
+            marker: {
+                icon: new L.Icon({
+                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                    shadowSize: [41, 41]
+                })
+            },
+            polygon: {
+                allowIntersection: false,
+                showArea: true,
+                drawError: {
+                    color: '#e1e100',
+                    message: '<strong>Warning!</strong> Farm borders cannot intersect!'
+                },
+                shapeOptions: {
+                    color: '#5cb85c',
+                    fillOpacity: 0.3
+                }
+            },
+            rectangle: {
+                shapeOptions: {
+                    color: '#5cb85c',
+                    fillOpacity: 0.3
+                }
+            }
+        },
+        edit: {
+            featureGroup: drawnItems
+        }
+    });
+    satelliteMap.addControl(drawControl);
+    
+    // Sample farm boundaries (default)
+    const farmBoundaries = [
+        [0.0236, 37.9062],
+        [0.0336, 37.9162],
+        [0.0236, 37.9262],
+        [0.0136, 37.9162]
+    ];
+    
+    // Add farm polygon with default boundaries
+    const defaultFarmPolygon = L.polygon([farmBoundaries], {
+        color: '#5cb85c', 
+        fillOpacity: 0.3
+    });
+    drawnItems.addLayer(defaultFarmPolygon);
+    
+    // Add area label
+    const farmCenter = defaultFarmPolygon.getBounds().getCenter();
+    const areaLabel = L.marker(farmCenter, {
+        icon: L.divIcon({
+            className: 'area-label',
+            html: '<div class="area-text">2.5 ha</div>',
+            iconSize: [80, 20],
+            iconAnchor: [40, 10]
+        })
+    }).addTo(drawnItems);
+    
+    // Function to update area display
+    function updateAreaLabel(layer) {
+        // Get area in square meters
+        const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+        // Convert to hectares
+        const areaHectares = area / 10000;
+        // Update form field
+        document.getElementById('farmSize').value = areaHectares.toFixed(2);
+        
+        // Update area label
+        const center = layer.getBounds().getCenter();
+        
+        if (areaLabel) {
+            drawnItems.removeLayer(areaLabel);
+        }
+        
+        const newLabel = L.marker(center, {
+            icon: L.divIcon({
+                className: 'area-label',
+                html: `<div class="area-text">${areaHectares.toFixed(2)} ha</div>`,
+                iconSize: [80, 20],
+                iconAnchor: [40, 10]
+            })
+        }).addTo(drawnItems);
+    }
+    
+    // Event handler for when a new shape is created
+    satelliteMap.on('draw:created', function(e) {
+        const layer = e.layer;
+        
+        // Clear existing farm boundaries
+        drawnItems.clearLayers();
+        
+        // Add new layer to the feature group
+        drawnItems.addLayer(layer);
+        
+        // If it's a polygon or rectangle, update area
+        if (e.layerType === 'polygon' || e.layerType === 'rectangle') {
+            updateAreaLabel(layer);
+            
+            // Update location input with center coordinates
+            const center = layer.getBounds().getCenter();
+            document.getElementById('farmLocation').value = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+        }
+        
+        // If it's a marker, update location input
+        if (e.layerType === 'marker') {
+            const latLng = layer.getLatLng();
+            document.getElementById('farmLocation').value = `${latLng.lat.toFixed(4)}, ${latLng.lng.toFixed(4)}`;
+        }
+    });
+    
+    // Event handler for when shapes are edited
+    satelliteMap.on('draw:edited', function(e) {
+        const layers = e.layers;
+        
+        layers.eachLayer(function(layer) {
+            if (layer instanceof L.Polygon) {
+                updateAreaLabel(layer);
+                
+                // Update location input with center coordinates
+                const center = layer.getBounds().getCenter();
+                document.getElementById('farmLocation').value = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+            }
+        });
+    });
+    
+    // Location input change handler
+    document.getElementById('farmLocation').addEventListener('change', function() {
+        const locationInput = this.value.trim();
+        if (locationInput) {
+            // Check if input is lat,lng format
+            const latLngMatch = locationInput.match(/(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)/);
+            
+            if (latLngMatch) {
+                const lat = parseFloat(latLngMatch[1]);
+                const lng = parseFloat(latLngMatch[3]);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    // Center map at the coordinates
+                    satelliteMap.setView([lat, lng], 13);
+                    
+                    // Create a marker at the coordinates if none exists
+                    drawnItems.clearLayers();
+                    const marker = L.marker([lat, lng]).addTo(drawnItems);
+                }
+            } else {
+                // Geocode the location using a geocoding service
+                // This is a placeholder - in a real app, you would use a geocoding API
+                alert('Please enter coordinates in the format: latitude, longitude');
+            }
+        }
+    });
+    
+    // Detect location button handler
+    document.getElementById('detectLocation').addEventListener('click', function() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Update location input
+                    document.getElementById('farmLocation').value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    
+                    // Center map
+                    satelliteMap.setView([lat, lng], 13);
+                    
+                    // Add marker
+                    drawnItems.clearLayers();
+                    const marker = L.marker([lat, lng]).addTo(drawnItems);
+                },
+                // Error callback
+                function(error) {
+                    console.error("Error getting location:", error);
+                    alert('Unable to access your location. Please check your device settings and permissions.');
+                },
+                // Options
+                { 
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    });
+    
+    // Farm select change handler
+    document.getElementById('farmSelect').addEventListener('change', function() {
+        const selectedFarm = this.value;
+        
+        if (selectedFarm === 'new') {
+            // Clear map for new farm
+            drawnItems.clearLayers();
+            
+            // Clear form fields
+            document.getElementById('farmLocation').value = '';
+            document.getElementById('farmSize').value = '';
+            
+            // Center map to a default location or keep current view
+            return;
+        }
+        
+        // Sample farm data
+        const farms = {
+            '1': {
+                name: 'Maize Farm',
+                location: [0.0236, 37.9062],
+                size: 2.5,
+                boundaries: [
+                    [0.0236, 37.9062],
+                    [0.0336, 37.9162],
+                    [0.0236, 37.9262],
+                    [0.0136, 37.9162]
+                ]
+            },
+            '2': {
+                name: 'Rice Paddy',
+                location: [0.1236, 37.8062],
+                size: 1.8,
+                boundaries: [
+                    [0.1236, 37.8062],
+                    [0.1336, 37.8162],
+                    [0.1236, 37.8262],
+                    [0.1136, 37.8162]
+                ]
+            },
+            '3': {
+                name: 'Mixed Crops',
+                location: [-0.0236, 37.7062],
+                size: 3.2,
+                boundaries: [
+                    [-0.0236, 37.7062],
+                    [-0.0136, 37.7162],
+                    [-0.0236, 37.7262],
+                    [-0.0336, 37.7162],
+                    [-0.0336, 37.7062]
+                ]
+            }
+        };
+        
+        const farm = farms[selectedFarm];
+        
+        if (farm) {
+            // Clear existing layers
+            drawnItems.clearLayers();
+            
+            // Add farm polygon
+            const farmPolygon = L.polygon([farm.boundaries], {
+                color: '#5cb85c', 
+                fillOpacity: 0.3
+            }).addTo(drawnItems);
+            
+            // Update form fields
+            document.getElementById('farmLocation').value = `${farm.location[0]}, ${farm.location[1]}`;
+            document.getElementById('farmSize').value = farm.size;
+            
+            // Center map on farm
+            satelliteMap.fitBounds(farmPolygon.getBounds());
+            
+            // Add area label
+            updateAreaLabel(farmPolygon);
+        }
+    });
+    
+    // Analyze button handler
+    document.getElementById('analyzeBtn').addEventListener('click', function() {
+        // Show loading indicator
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Analyzing...';
+        this.disabled = true;
+        
+        // Simulate analysis - in a real app, this would be an API call
+        setTimeout(() => {
+            // Reset button
+            this.innerHTML = '<i class="fas fa-satellite-dish me-2"></i> Analyze Satellite Data';
+            this.disabled = false;
+            
+            // Update visualization elements with "new" data
+            // Update image date and source
+            document.getElementById('imageDate').textContent = new Date().toISOString().split('T')[0];
+            document.getElementById('imageSource').textContent = document.getElementById('satelliteSource').value;
+            
+            // Show success message
+            alert('Satellite data analysis complete!');
+            
+            // Scroll to results
+            document.querySelector('.col-lg-8.mb-4').scrollIntoView({ behavior: 'smooth' });
+        }, 2000);
+    });
+    
+    // Initialize NDVI Trend chart
+    const ndviTrendChart = new Chart(document.getElementById('ndviTrendChart'), {
+        type: 'line',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            datasets: [{
+                label: 'NDVI',
+                data: [0.35, 0.42, 0.56, 0.68, 0.72, 0.65, 0.58],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 1,
+                    title: {
+                        display: true,
+                        text: 'NDVI Value'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `NDVI: ${context.parsed.y.toFixed(2)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Toggle between map and image views
+    document.getElementById('mapView').addEventListener('click', function() {
+        this.classList.add('active');
+        document.getElementById('imageView').classList.remove('active');
+        document.getElementById('satelliteMap').classList.remove('d-none');
+        document.getElementById('satelliteImage').classList.add('d-none');
+    });
+    
+    document.getElementById('imageView').addEventListener('click', function() {
+        this.classList.add('active');
+        document.getElementById('mapView').classList.remove('active');
+        document.getElementById('satelliteMap').classList.add('d-none');
+        document.getElementById('satelliteImage').classList.remove('d-none');
+    });
+    
+    // Setup download button event listeners
+    document.getElementById('downloadImageBtn').addEventListener('click', function() {
+        alert('Downloading satellite image...');
+    });
+    
+    document.getElementById('downloadNdviBtn').addEventListener('click', function() {
+        alert('Downloading NDVI data...');
+    });
+    
+    document.getElementById('downloadReportBtn').addEventListener('click', function() {
+        alert('Downloading analysis report...');
+    });
+    
+    document.getElementById('downloadShapefileBtn').addEventListener('click', function() {
+        alert('Downloading shapefile...');
+    });
+});
+</script>
+{% endblock %}

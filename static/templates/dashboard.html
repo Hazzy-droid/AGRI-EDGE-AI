@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title"><i class="fas fa-tachometer-alt me-2"></i><span class="translate" data-key="dashboard">Dashboard</span></h2>
+                <p class="card-text translate" data-key="dashboard_desc">Overview of your farm's current status and key metrics</p>
+                
+                <div class="farm-selector mb-3">
+                    <select class="form-select" id="farmSelector">
+                        <option value="1" selected>Maize Farm (2.5 ha)</option>
+                        <option value="2">Rice Paddy (1.8 ha)</option>
+                        <option value="3">Mixed Crops (3.2 ha)</option>
+                    </select>
+                </div>
+                
+                <div class="date-display mb-3">
+                    <i class="far fa-calendar-alt me-2"></i>
+                    <span id="currentDate">{{ current_date }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Weather Overview Card -->
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cloud-sun me-2"></i>
+                    <span class="translate" data-key="weather">Weather</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if weather_data %}
+                <div class="weather-overview text-center">
+                    <div class="current-weather mb-3">
+                        <i class="fas fa-{{ weather_data.icon if weather_data.icon else 'cloud' }} fa-3x mb-2"></i>
+                        <h2 class="temperature">{{ weather_data.temperature|round|int }}°C</h2>
+                        <p class="weather-description">{{ weather_data.weather_description }}</p>
+                    </div>
+                    <div class="weather-details">
+                        <div class="row g-0">
+                            <div class="col-4">
+                                <div class="weather-detail">
+                                    <i class="fas fa-tint"></i>
+                                    <span>{{ weather_data.humidity }}%</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="weather-detail">
+                                    <i class="fas fa-wind"></i>
+                                    <span>{{ weather_data.wind_speed }} m/s</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="weather-detail">
+                                    <i class="fas fa-cloud-rain"></i>
+                                    <span>{{ weather_data.rain|default(0) }} mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="weather_unavailable">Weather data unavailable</span>
+                </div>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('main.weather') }}" class="btn btn-sm btn-outline-primary">
+                        <span class="translate" data-key="view_forecast">View Forecast</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crop Health Card -->
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-leaf me-2"></i>
+                    <span class="translate" data-key="crop_health">Crop Health</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="crop-health-gauge text-center mb-3">
+                    <canvas id="cropHealthGauge" width="150" height="150"></canvas>
+                </div>
+                <div class="crop-health-status text-center mb-3">
+                    <h4 class="status-label"><span class="badge bg-success">Good</span></h4>
+                    <p class="status-description translate" data-key="crop_health_good">Your crops are in good health</p>
+                </div>
+                <div class="text-center">
+                    <a href="{{ url_for('main.satellite') }}" class="btn btn-sm btn-outline-primary">
+                        <span class="translate" data-key="view_details">View Details</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soil Moisture Card -->
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tint me-2"></i>
+                    <span class="translate" data-key="soil_moisture">Soil Moisture</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if soil_data %}
+                <div class="soil-moisture-chart">
+                    <canvas id="soilMoistureChart" width="100%" height="120"></canvas>
+                </div>
+                <div class="moisture-level text-center mt-3">
+                    <h3>{{ soil_data.data[-1].moisture|round|int }}%</h3>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ soil_data.data[-1].moisture }}%" 
+                            aria-valuenow="{{ soil_data.data[-1].moisture }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <p class="mt-2 status-text">
+                        {% if soil_data.data[-1].moisture < 30 %}
+                        <span class="badge bg-danger translate" data-key="low_moisture">Low</span>
+                        {% elif soil_data.data[-1].moisture > 70 %}
+                        <span class="badge bg-warning translate" data-key="high_moisture">High</span>
+                        {% else %}
+                        <span class="badge bg-success translate" data-key="optimal_moisture">Optimal</span>
+                        {% endif %}
+                    </p>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="soil_data_unavailable">Soil data unavailable</span>
+                </div>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('main.soil') }}" class="btn btn-sm btn-outline-primary">
+                        <span class="translate" data-key="view_soil_data">View Soil Data</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations Card -->
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    <span class="translate" data-key="recommendations">Recommendations</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for recommendation in recommendations %}
+                    <div class="list-group-item d-flex align-items-center">
+                        {% if recommendation.priority == 'high' %}
+                        <div class="recommendation-priority me-2">
+                            <span class="badge bg-danger"><i class="fas fa-exclamation-circle"></i></span>
+                        </div>
+                        {% elif recommendation.priority == 'medium' %}
+                        <div class="recommendation-priority me-2">
+                            <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
+                        </div>
+                        {% else %}
+                        <div class="recommendation-priority me-2">
+                            <span class="badge bg-info"><i class="fas fa-info-circle"></i></span>
+                        </div>
+                        {% endif %}
+                        <div class="recommendation-content small">
+                            {{ recommendation.description }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span class="translate" data-key="no_recommendations">No recommendations available</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('main.recommendations') }}" class="btn btn-sm btn-outline-primary">
+                        <span class="translate" data-key="view_all_recommendations">View All</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Farm Map -->
+    <div class="col-md-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-map-marked-alt me-2"></i>
+                    <span class="translate" data-key="farm_map">Farm Map</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="farmMap" style="height: 350px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Activities -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    <span class="translate" data-key="upcoming_activities">Upcoming Activities</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-tint me-2 text-primary"></i> Irrigation</h6>
+                            <small>Tomorrow</small>
+                        </div>
+                        <p class="mb-1 small">Schedule irrigation based on soil moisture and weather forecast</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-bug me-2 text-danger"></i> Pest Monitoring</h6>
+                            <small>2 days</small>
+                        </div>
+                        <p class="mb-1 small">Check for fall armyworm and other potential pests</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-flask me-2 text-success"></i> Fertilizer Application</h6>
+                            <small>3 days</small>
+                        </div>
+                        <p class="mb-1 small">Apply recommended nitrogen fertilizer</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-chart-line me-2 text-info"></i> Growth Assessment</h6>
+                            <small>1 week</small>
+                        </div>
+                        <p class="mb-1 small">Measure crop height and assess growth stage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Farm Map
+    const farmMap = L.map('farmMap').setView([0.0236, 37.9062], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(farmMap);
+    
+    // Add farm boundary (sample polygon)
+    const farmBoundary = L.polygon([
+        [0.0236, 37.9062],
+        [0.0246, 37.9082],
+        [0.0256, 37.9052],
+        [0.0226, 37.9042]
+    ], {color: 'green', fillOpacity: 0.3}).addTo(farmMap);
+    
+    // Add markers for soil sensors
+    L.marker([0.0240, 37.9062]).addTo(farmMap)
+        .bindPopup('Soil Sensor 1<br>Moisture: 55%<br>Temperature: 24°C');
+    
+    L.marker([0.0246, 37.9072]).addTo(farmMap)
+        .bindPopup('Soil Sensor 2<br>Moisture: 48%<br>Temperature: 25°C');
+    
+    // Initialize Crop Health Gauge
+    const cropHealthGauge = document.getElementById('cropHealthGauge');
+    new Chart(cropHealthGauge, {
+        type: 'doughnut',
+        data: {
+            labels: ['Good', 'Fair', 'Poor'],
+            datasets: [{
+                data: [70, 20, 10],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Initialize Soil Moisture Chart
+    {% if soil_data %}
+    const soilMoistureChart = document.getElementById('soilMoistureChart');
+    const moistureData = {{ soil_data.data|map(attribute='moisture')|list|tojson }};
+    const timestamps = {{ soil_data.data|map(attribute='timestamp')|list|tojson }};
+    
+    // Get only every 6th record to reduce data points
+    const filteredMoistureData = moistureData.filter((_, i) => i % 6 === 0);
+    const filteredTimestamps = timestamps.filter((_, i) => i % 6 === 0);
+    
+    // Format timestamps to show only time
+    const formattedTimes = filteredTimestamps.map(timestamp => {
+        const date = new Date(timestamp);
+        return date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+    });
+    
+    new Chart(soilMoistureChart, {
+        type: 'line',
+        data: {
+            labels: formattedTimes,
+            datasets: [{
+                label: 'Soil Moisture (%)',
+                data: filteredMoistureData,
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 25
+                    }
+                },
+                x: {
+                    display: true,
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

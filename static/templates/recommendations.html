@@ -1,0 +1,674 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendations | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    <span class="translate" data-key="recommendations">Recommendations</span>
+                </h2>
+                <p class="card-text translate" data-key="recommendations_desc">Personalized agricultural recommendations for your farm</p>
+                
+                <!-- Farm Selection and Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="farmSelect" class="form-label translate" data-key="select_farm">Select Farm</label>
+                            <select class="form-select" id="farmSelect">
+                                <option value="1" {% if farm_id == '1' %}selected{% endif %}>Maize Farm (2.5 ha)</option>
+                                <option value="2" {% if farm_id == '2' %}selected{% endif %}>Rice Paddy (1.8 ha)</option>
+                                <option value="3" {% if farm_id == '3' %}selected{% endif %}>Mixed Crops (3.2 ha)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="categoryFilter" class="form-label translate" data-key="category_filter">Category Filter</label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value="all" selected>All Categories</option>
+                                <option value="irrigation">Irrigation</option>
+                                <option value="fertilization">Fertilization</option>
+                                <option value="pest_control">Pest Control</option>
+                                <option value="planting">Planting</option>
+                                <option value="harvesting">Harvesting</option>
+                                <option value="crop_health">Crop Health</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="priorityFilter" class="form-label translate" data-key="priority_filter">Priority Filter</label>
+                            <select class="form-select" id="priorityFilter">
+                                <option value="all" selected>All Priorities</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recommendations List -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 translate" data-key="recommendation_list">Recommendation List</h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" id="allRecsBtn">
+                        <span class="translate" data-key="all">All</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="pendingRecsBtn">
+                        <span class="translate" data-key="pending">Pending</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="implementedRecsBtn">
+                        <span class="translate" data-key="implemented">Implemented</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recommendations %}
+                <div class="list-group list-group-flush recommendation-list">
+                    {% for recommendation in recommendations %}
+                    <div class="list-group-item recommendation-item" 
+                         data-category="{{ recommendation.category }}" 
+                         data-priority="{{ recommendation.priority }}"
+                         data-status="pending">
+                        <div class="d-flex w-100 align-items-start">
+                            <!-- Priority Icon -->
+                            <div class="recommendation-priority me-3">
+                                {% if recommendation.priority == 'high' %}
+                                <span class="badge bg-danger rounded-pill">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </span>
+                                {% elif recommendation.priority == 'medium' %}
+                                <span class="badge bg-warning rounded-pill">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </span>
+                                {% else %}
+                                <span class="badge bg-info rounded-pill">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Recommendation Content -->
+                            <div class="recommendation-content flex-grow-1">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        {% if recommendation.category == 'irrigation' %}
+                                        <i class="fas fa-tint text-primary me-1"></i>
+                                        <span class="translate" data-key="irrigation">Irrigation</span>
+                                        {% elif recommendation.category == 'fertilization' %}
+                                        <i class="fas fa-flask text-success me-1"></i>
+                                        <span class="translate" data-key="fertilization">Fertilization</span>
+                                        {% elif recommendation.category == 'pest_control' %}
+                                        <i class="fas fa-bug text-danger me-1"></i>
+                                        <span class="translate" data-key="pest_control">Pest Control</span>
+                                        {% elif recommendation.category == 'planting' %}
+                                        <i class="fas fa-seedling text-success me-1"></i>
+                                        <span class="translate" data-key="planting">Planting</span>
+                                        {% elif recommendation.category == 'harvesting' %}
+                                        <i class="fas fa-cut text-warning me-1"></i>
+                                        <span class="translate" data-key="harvesting">Harvesting</span>
+                                        {% elif recommendation.category == 'crop_health' %}
+                                        <i class="fas fa-heartbeat text-danger me-1"></i>
+                                        <span class="translate" data-key="crop_health">Crop Health</span>
+                                        {% else %}
+                                        <i class="fas fa-clipboard-list me-1"></i>
+                                        <span>{{ recommendation.category|capitalize }}</span>
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">
+                                        <span class="translate" data-key="{{ recommendation.priority }}_priority">
+                                            {{ recommendation.priority|capitalize }} Priority
+                                        </span>
+                                    </small>
+                                </div>
+                                <p class="mb-1">{{ recommendation.description }}</p>
+                                <div class="recommendation-actions mt-2 d-flex align-items-center">
+                                    <small class="text-muted me-2">
+                                        <i class="far fa-calendar-alt me-1"></i>
+                                        <span class="date-generated">{{ now.strftime('%Y-%m-%d') }}</span>
+                                    </small>
+                                    <div class="form-check form-switch ms-auto">
+                                        <input class="form-check-input implementation-toggle" type="checkbox" role="switch" id="implementation{{ loop.index }}">
+                                        <label class="form-check-label implementation-status" for="implementation{{ loop.index }}">
+                                            <span class="translate" data-key="mark_as_implemented">Mark as Implemented</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="no_recommendations">No recommendations available</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommendation Details and Statistics -->
+    <div class="col-md-4 mb-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="recommendation_summary">Recommendation Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="recommendation-stats">
+                    <!-- Priority Distribution -->
+                    <h6 class="text-muted mb-2 translate" data-key="priority_distribution">Priority Distribution</h6>
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set high_count = recommendations|selectattr('priority', 'eq', 'high')|list|length %}
+                        {% set medium_count = recommendations|selectattr('priority', 'eq', 'medium')|list|length %}
+                        {% set low_count = recommendations|selectattr('priority', 'eq', 'low')|list|length %}
+                        {% set total_count = recommendations|length %}
+                        
+                        {% if total_count > 0 %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (high_count / total_count * 100)|round|int }}%" 
+                            aria-valuenow="{{ (high_count / total_count * 100)|round|int }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="high">High</span> 
+                            {% if (high_count / total_count * 100)|round|int > 15 %}
+                            {{ (high_count / total_count * 100)|round|int }}%
+                            {% endif %}
+                        </div>
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (medium_count / total_count * 100)|round|int }}%" 
+                            aria-valuenow="{{ (medium_count / total_count * 100)|round|int }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="medium">Medium</span>
+                            {% if (medium_count / total_count * 100)|round|int > 15 %}
+                            {{ (medium_count / total_count * 100)|round|int }}%
+                            {% endif %}
+                        </div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ (low_count / total_count * 100)|round|int }}%" 
+                            aria-valuenow="{{ (low_count / total_count * 100)|round|int }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="translate" data-key="low">Low</span>
+                            {% if (low_count / total_count * 100)|round|int > 15 %}
+                            {{ (low_count / total_count * 100)|round|int }}%
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Category Distribution -->
+                    <h6 class="text-muted mb-2 translate" data-key="category_distribution">Category Distribution</h6>
+                    <canvas id="categoryChart" height="200"></canvas>
+                    
+                    <!-- Implementation Status -->
+                    <h6 class="text-muted mb-2 mt-4 translate" data-key="implementation_status">Implementation Status</h6>
+                    <div class="implementation-status-chart">
+                        <canvas id="implementationChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Weather Context -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="weather_context">Weather Context</h5>
+            </div>
+            <div class="card-body">
+                <div class="current-weather-summary mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-cloud-sun fa-2x me-3"></i>
+                        <div>
+                            <h6 class="mb-1">Currently</h6>
+                            <p class="mb-0">25°C, Partly Cloudy</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upcoming-weather mb-3">
+                    <h6 class="text-muted mb-2 translate" data-key="forecast_next_3_days">Forecast Next 3 Days</h6>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="forecast-day">
+                                <div class="day-name">Today</div>
+                                <i class="fas fa-cloud-sun mb-1"></i>
+                                <div class="temp">26°C</div>
+                                <div class="rain"><i class="fas fa-tint text-primary"></i> 10%</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="forecast-day">
+                                <div class="day-name">Tomorrow</div>
+                                <i class="fas fa-cloud-rain mb-1"></i>
+                                <div class="temp">24°C</div>
+                                <div class="rain"><i class="fas fa-tint text-primary"></i> 60%</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="forecast-day">
+                                <div class="day-name">Wed</div>
+                                <i class="fas fa-cloud mb-1"></i>
+                                <div class="temp">23°C</div>
+                                <div class="rain"><i class="fas fa-tint text-primary"></i> 30%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-impact">
+                    <h6 class="text-muted mb-2 translate" data-key="impact_on_recommendations">Impact on Recommendations</h6>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        60% chance of rain tomorrow may affect pesticide application and field operations.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendation Calendar -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0 translate" data-key="recommendation_calendar">Recommendation Calendar</h5>
+            </div>
+            <div class="card-body">
+                <div class="recommendation-timeline">
+                    <div class="timeline-header d-flex">
+                        {% for i in range(14) %}
+                        {% set day = now.replace(day=now.day + i) %}
+                        <div class="timeline-day flex-grow-1 text-center">
+                            <div class="day-name">{{ day.strftime('%a') }}</div>
+                            <div class="day-date">{{ day.strftime('%d') }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Tasks organized by category -->
+                    <div class="timeline-categories mt-4">
+                        <!-- Irrigation Category -->
+                        <div class="timeline-category mb-3">
+                            <div class="category-label">
+                                <i class="fas fa-tint text-primary me-2"></i>
+                                <span class="translate" data-key="irrigation">Irrigation</span>
+                            </div>
+                            <div class="category-timeline d-flex">
+                                {% for i in range(14) %}
+                                <div class="timeline-day flex-grow-1">
+                                    {% if i == 1 or i == 5 or i == 9 %}
+                                    <div class="timeline-task bg-primary">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="timeline-empty"></div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Fertilization Category -->
+                        <div class="timeline-category mb-3">
+                            <div class="category-label">
+                                <i class="fas fa-flask text-success me-2"></i>
+                                <span class="translate" data-key="fertilization">Fertilization</span>
+                            </div>
+                            <div class="category-timeline d-flex">
+                                {% for i in range(14) %}
+                                <div class="timeline-day flex-grow-1">
+                                    {% if i == 3 or i == 11 %}
+                                    <div class="timeline-task bg-success">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="timeline-empty"></div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Pest Control Category -->
+                        <div class="timeline-category mb-3">
+                            <div class="category-label">
+                                <i class="fas fa-bug text-danger me-2"></i>
+                                <span class="translate" data-key="pest_control">Pest Control</span>
+                            </div>
+                            <div class="category-timeline d-flex">
+                                {% for i in range(14) %}
+                                <div class="timeline-day flex-grow-1">
+                                    {% if i == 2 or i == 8 %}
+                                    <div class="timeline-task bg-danger">
+                                        <i class="fas fa-bug"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="timeline-empty"></div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Other Tasks Category -->
+                        <div class="timeline-category mb-3">
+                            <div class="category-label">
+                                <i class="fas fa-tasks text-warning me-2"></i>
+                                <span class="translate" data-key="other_tasks">Other Tasks</span>
+                            </div>
+                            <div class="category-timeline d-flex">
+                                {% for i in range(14) %}
+                                <div class="timeline-day flex-grow-1">
+                                    {% if i == 0 or i == 6 or i == 12 %}
+                                    <div class="timeline-task bg-warning">
+                                        <i class="fas fa-tasks"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="timeline-empty"></div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom styles for recommendation calendar */
+    .timeline-day {
+        min-width: 40px;
+        position: relative;
+    }
+    
+    .day-name, .day-date {
+        font-size: 0.8rem;
+    }
+    
+    .timeline-task {
+        height: 30px;
+        margin: 0 2px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .timeline-empty {
+        height: 30px;
+    }
+    
+    .category-label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .forecast-day {
+        padding: 10px 5px;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 5px;
+    }
+    
+    .day-name {
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .rain {
+        font-size: 0.8rem;
+    }
+    
+    .implementation-toggle:checked + .implementation-status::after {
+        content: "Implemented";
+    }
+    
+    .implementation-toggle:not(:checked) + .implementation-status::after {
+        content: "Mark as Implemented";
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize form selection
+    const farmSelect = document.getElementById('farmSelect');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    
+    if (farmSelect) {
+        farmSelect.addEventListener('change', function() {
+            window.location.href = `?farm_id=${this.value}`;
+        });
+    }
+    
+    // Filter recommendations by category and priority
+    function filterRecommendations() {
+        const categoryValue = categoryFilter.value;
+        const priorityValue = priorityFilter.value;
+        const items = document.querySelectorAll('.recommendation-item');
+        
+        items.forEach(item => {
+            const itemCategory = item.getAttribute('data-category');
+            const itemPriority = item.getAttribute('data-priority');
+            const itemStatus = item.getAttribute('data-status');
+            
+            let showByCategory = (categoryValue === 'all' || categoryValue === itemCategory);
+            let showByPriority = (priorityValue === 'all' || priorityValue === itemPriority);
+            let showByStatus = true; // Show all by default
+            
+            // If status filter is active
+            if (document.getElementById('pendingRecsBtn').classList.contains('active')) {
+                showByStatus = (itemStatus === 'pending');
+            } else if (document.getElementById('implementedRecsBtn').classList.contains('active')) {
+                showByStatus = (itemStatus === 'implemented');
+            }
+            
+            if (showByCategory && showByPriority && showByStatus) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        updateEmptyState();
+    }
+    
+    // Show empty state if no recommendations are visible
+    function updateEmptyState() {
+        const visibleItems = document.querySelectorAll('.recommendation-item[style=""]').length;
+        const listContainer = document.querySelector('.recommendation-list');
+        const emptyState = document.querySelector('.recommendation-list .alert');
+        
+        if (visibleItems === 0) {
+            // If there's no empty state already, create one
+            if (!emptyState) {
+                const emptyStateDiv = document.createElement('div');
+                emptyStateDiv.className = 'alert alert-info m-3';
+                emptyStateDiv.innerHTML = '<i class="fas fa-info-circle me-2"></i><span class="translate" data-key="no_matching_recommendations">No matching recommendations</span>';
+                listContainer.appendChild(emptyStateDiv);
+            }
+        } else {
+            // If there's an empty state, remove it
+            if (emptyState) {
+                emptyState.remove();
+            }
+        }
+    }
+    
+    // Add filter event listeners
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterRecommendations);
+    }
+    
+    if (priorityFilter) {
+        priorityFilter.addEventListener('change', filterRecommendations);
+    }
+    
+    // Status filter buttons
+    const allRecsBtn = document.getElementById('allRecsBtn');
+    const pendingRecsBtn = document.getElementById('pendingRecsBtn');
+    const implementedRecsBtn = document.getElementById('implementedRecsBtn');
+    
+    if (allRecsBtn && pendingRecsBtn && implementedRecsBtn) {
+        allRecsBtn.addEventListener('click', function() {
+            allRecsBtn.classList.add('active');
+            pendingRecsBtn.classList.remove('active');
+            implementedRecsBtn.classList.remove('active');
+            filterRecommendations();
+        });
+        
+        pendingRecsBtn.addEventListener('click', function() {
+            pendingRecsBtn.classList.add('active');
+            allRecsBtn.classList.remove('active');
+            implementedRecsBtn.classList.remove('active');
+            filterRecommendations();
+        });
+        
+        implementedRecsBtn.addEventListener('click', function() {
+            implementedRecsBtn.classList.add('active');
+            allRecsBtn.classList.remove('active');
+            pendingRecsBtn.classList.remove('active');
+            filterRecommendations();
+        });
+    }
+    
+    // Implementation toggle
+    const implementationToggles = document.querySelectorAll('.implementation-toggle');
+    implementationToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const recommendationItem = this.closest('.recommendation-item');
+            if (this.checked) {
+                recommendationItem.setAttribute('data-status', 'implemented');
+                recommendationItem.style.opacity = '0.7';
+            } else {
+                recommendationItem.setAttribute('data-status', 'pending');
+                recommendationItem.style.opacity = '1';
+            }
+            
+            // Update charts
+            updateImplementationChart();
+            
+            // If status filter is active, apply it
+            if (pendingRecsBtn.classList.contains('active') || implementedRecsBtn.classList.contains('active')) {
+                filterRecommendations();
+            }
+        });
+    });
+    
+    // Initialize charts
+    
+    // Category Distribution Chart
+    const categoryChart = document.getElementById('categoryChart');
+    if (categoryChart) {
+        // Count recommendations by category
+        const categories = {};
+        document.querySelectorAll('.recommendation-item').forEach(item => {
+            const category = item.getAttribute('data-category');
+            if (!categories[category]) {
+                categories[category] = 0;
+            }
+            categories[category]++;
+        });
+        
+        // Prepare data for chart
+        const categoryLabels = [];
+        const categoryData = [];
+        const categoryColors = [];
+        
+        // Define colors for each category
+        const categoryColorMap = {
+            'irrigation': '#0d6efd',     // Primary/blue
+            'fertilization': '#198754',  // Success/green
+            'pest_control': '#dc3545',   // Danger/red
+            'planting': '#20c997',       // Teal
+            'harvesting': '#ffc107',     // Warning/yellow
+            'crop_health': '#6f42c1'     // Purple
+        };
+        
+        for (const category in categories) {
+            categoryLabels.push(category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' '));
+            categoryData.push(categories[category]);
+            categoryColors.push(categoryColorMap[category] || '#6c757d'); // Default to secondary/gray
+        }
+        
+        new Chart(categoryChart, {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: categoryColors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Implementation Status Chart
+    const implementationChart = document.getElementById('implementationChart');
+    let implementationChartInstance;
+    
+    function updateImplementationChart() {
+        if (implementationChart) {
+            // Count implementations
+            const implemented = document.querySelectorAll('.recommendation-item[data-status="implemented"]').length;
+            const pending = document.querySelectorAll('.recommendation-item[data-status="pending"]').length;
+            
+            // If the chart already exists, update it
+            if (implementationChartInstance) {
+                implementationChartInstance.data.datasets[0].data = [implemented, pending];
+                implementationChartInstance.update();
+            } else {
+                // Create a new chart
+                implementationChartInstance = new Chart(implementationChart, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Implemented', 'Pending'],
+                        datasets: [{
+                            data: [implemented, pending],
+                            backgroundColor: ['#198754', '#6c757d'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+    
+    // Initialize implementation chart
+    updateImplementationChart();
+});
+</script>
+{% endblock %}
+

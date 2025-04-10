@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Sustainability Challenges | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0"><i class="fas fa-trophy text-warning me-2"></i> Sustainability Challenges</h1>
+                <div>
+                    <a href="{{ url_for('sustainability.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted mt-2">Join sustainability challenges to implement multiple practices and earn rewards</p>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="all" selected>All Categories</option>
+                                <option value="individual">Individual</option>
+                                <option value="community">Community</option>
+                                <option value="regional">Regional</option>
+                                <option value="seasonal">Seasonal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="difficultyFilter">
+                                <option value="all" selected>All Difficulty Levels</option>
+                                <option value="1">Beginner (Level 1)</option>
+                                <option value="2">Easy (Level 2)</option>
+                                <option value="3">Intermediate (Level 3)</option>
+                                <option value="4">Advanced (Level 4)</option>
+                                <option value="5">Expert (Level 5)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="all" selected>All Challenges</option>
+                                <option value="not-joined">Not Joined Yet</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button class="btn btn-primary" id="applyFilters">
+                                    <i class="fas fa-filter me-1"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Challenges -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h4 mb-3">Active Challenges</h2>
+            
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="challengesContainer">
+                {% for challenge in active_challenges %}
+                    <div class="col challenge-card" 
+                         data-category="{{ challenge.category }}" 
+                         data-difficulty="{{ challenge.difficulty }}"
+                         data-status="{% if challenge.id in user_challenges %}{{ user_challenges[challenge.id].status }}{% else %}not-joined{% endif %}">
+                        <div class="card h-100 border-0 shadow-sm">
+                            {% if challenge.image_url %}
+                                <div class="card-img-top position-relative" style="height: 160px; background: url('{{ challenge.image_url }}') center/cover no-repeat;">
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-warning text-dark">{{ challenge.points_awarded }} points</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 160px;">
+                                    <i class="fas fa-leaf fa-4x text-success opacity-25"></i>
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-warning text-dark">{{ challenge.points_awarded }} points</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">{{ challenge.title }}</h5>
+                                    <span class="badge {% if challenge.difficulty <= 2 %}bg-success{% elif challenge.difficulty <= 4 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        Level {{ challenge.difficulty }}
+                                    </span>
+                                </div>
+                                
+                                <p class="card-text text-muted mb-3">{{ challenge.description|truncate(120) }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-secondary">{{ challenge.category|title }}</span>
+                                    <small class="text-muted">
+                                        Ends: {{ (challenge.end_date|string)[:10] }}
+                                    </small>
+                                </div>
+                                
+                                {% if challenge.id in user_challenges %}
+                                    {% set user_challenge = user_challenges[challenge.id] %}
+                                    {% if user_challenge.status == 'completed' %}
+                                        <div class="alert alert-success mb-3 py-2">
+                                            <i class="fas fa-check-circle me-1"></i> Challenge Completed!
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-outline-success">
+                                                <i class="fas fa-trophy me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    {% elif user_challenge.status == 'in_progress' %}
+                                        <div class="progress mb-3" style="height: 10px;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                                 role="progressbar" 
+                                                 style="width: {{ user_challenge.progress_percentage }}%;" 
+                                                 aria-valuenow="{{ user_challenge.progress_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-warning">
+                                                <i class="fas fa-running me-1"></i> Continue Challenge ({{ user_challenge.progress_percentage }}%)
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="d-grid">
+                                        <a href="{{ url_for('sustainability.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> View Challenge
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="card-footer bg-white">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i> {{ challenge.participants|default(0, true) }} participants
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No active challenges available at the moment. Check back soon!
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Challenges (Preview) -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="h4 mb-3">Upcoming Challenges</h2>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-alt fa-4x text-muted opacity-50"></i>
+                            </div>
+                            <h5>Seasonal Water Conservation Challenge</h5>
+                            <p class="text-muted">Coming soon for the dry season</p>
+                            <span class="badge bg-secondary">Community</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-alt fa-4x text-muted opacity-50"></i>
+                            </div>
+                            <h5>Regional Biodiversity Initiative</h5>
+                            <p class="text-muted">Launching next month</p>
+                            <span class="badge bg-secondary">Regional</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-alt fa-4x text-muted opacity-50"></i>
+                            </div>
+                            <h5>Climate Resilience Challenge</h5>
+                            <p class="text-muted">Starting in two weeks</p>
+                            <span class="badge bg-secondary">Individual</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        
+        applyFiltersBtn.addEventListener('click', function() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const challenges = document.querySelectorAll('.challenge-card');
+            
+            challenges.forEach(challenge => {
+                let showChallenge = true;
+                
+                // Category filter
+                if (categoryFilter !== 'all' && challenge.dataset.category !== categoryFilter) {
+                    showChallenge = false;
+                }
+                
+                // Difficulty filter
+                if (difficultyFilter !== 'all' && challenge.dataset.difficulty !== difficultyFilter) {
+                    showChallenge = false;
+                }
+                
+                // Status filter
+                if (statusFilter !== 'all' && challenge.dataset.status !== statusFilter) {
+                    showChallenge = false;
+                }
+                
+                challenge.style.display = showChallenge ? '' : 'none';
+            });
+            
+            // Check if no challenges are visible
+            let visibleChallenges = Array.from(challenges).filter(c => c.style.display !== 'none').length;
+            
+            const container = document.getElementById('challengesContainer');
+            const noResultsMessage = document.querySelector('.no-results-message');
+            
+            if (visibleChallenges === 0) {
+                if (!noResultsMessage) {
+                    const message = document.createElement('div');
+                    message.className = 'col-12 no-results-message';
+                    message.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No challenges match your filter criteria. Please try different filters.
+                        </div>
+                    `;
+                    container.appendChild(message);
+                }
+            } else if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
+        });
+    });
+</script>
+{% endblock %}

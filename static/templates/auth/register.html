@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Climate-Smart Agriculture Platform | Register{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow mt-3 mb-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Create Account</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Join our community of climate-smart farmers to access agricultural insights and connect with other farmers.</p>
+                    
+                    <!-- Registration Form -->
+                    <form action="{{ url_for('auth.register') }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Basic Information -->
+                        <h5 class="mb-3">Personal Information</h5>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required minlength="8">
+                                <div class="form-text">Must be at least 8 characters</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="8">
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Information -->
+                        <h5 class="mt-4 mb-3">Contact Information</h5>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="location" name="location" required placeholder="City, Country">
+                        </div>
+                        
+                        <!-- Farm Information -->
+                        <h5 class="mt-4 mb-3">Farm Information</h5>
+                        <div class="mb-3">
+                            <label for="farm_name" class="form-label">Farm Name</label>
+                            <input type="text" class="form-control" id="farm_name" name="farm_name">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="farm_size" class="form-label">Farm Size (hectares)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="farm_size" name="farm_size">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Primary Farming Activities</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="crops" name="farming_activities" value="crops">
+                                <label class="form-check-label" for="crops">Crop Farming</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="livestock" name="farming_activities" value="livestock">
+                                <label class="form-check-label" for="livestock">Livestock</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="poultry" name="farming_activities" value="poultry">
+                                <label class="form-check-label" for="poultry">Poultry</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="dairy" name="farming_activities" value="dairy">
+                                <label class="form-check-label" for="dairy">Dairy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="aquaculture" name="farming_activities" value="aquaculture">
+                                <label class="form-check-label" for="aquaculture">Aquaculture</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Agreements -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agree_terms" name="agree_terms" required>
+                            <label class="form-check-label" for="agree_terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-user-plus me-2"></i> Create Account
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms of Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>1. Terms</h5>
+                <p>By accessing this platform, you are agreeing to be bound by these terms of service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws.</p>
+                
+                <h5>2. Use License</h5>
+                <p>Permission is granted to temporarily use this platform for personal, non-commercial transitory viewing only.</p>
+                
+                <h5>3. Disclaimer</h5>
+                <p>The materials on the Climate-Smart Agriculture Platform are provided on an 'as is' basis. The platform makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties.</p>
+                
+                <h5>4. Limitations</h5>
+                <p>In no event shall the Climate-Smart Agriculture Platform or its suppliers be liable for any damages arising out of the use or inability to use the materials on the platform.</p>
+                
+                <h5>5. Marketplace Rules</h5>
+                <p>Users selling or buying products through the marketplace must adhere to the following rules:</p>
+                <ul>
+                    <li>Provide accurate descriptions of products</li>
+                    <li>Honor agreed-upon transactions</li>
+                    <li>Report any fraudulent activity immediately</li>
+                    <li>Not engage in price fixing or other anti-competitive behavior</li>
+                </ul>
+                
+                <h5>6. Content Guidelines</h5>
+                <p>Users are responsible for the content they post and must ensure it is:</p>
+                <ul>
+                    <li>Accurate and not misleading</li>
+                    <li>Not infringing on intellectual property rights</li>
+                    <li>Not offensive, defamatory, or harmful</li>
+                    <li>Relevant to agricultural practices and community engagement</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>1. Information We Collect</h5>
+                <p>We collect information that you provide directly to us, including when you create an account, update your profile, access our services, or communicate with us.</p>
+                
+                <h5>2. How We Use Your Information</h5>
+                <p>We use the information we collect to provide, maintain, and improve our services, including to:</p>
+                <ul>
+                    <li>Provide agricultural insights and recommendations</li>
+                    <li>Facilitate marketplace transactions</li>
+                    <li>Connect you with other farmers in the community</li>
+                    <li>Send notifications, updates, and security alerts</li>
+                </ul>
+                
+                <h5>3. Information Sharing</h5>
+                <p>We do not share your personal information with companies, organizations, or individuals outside of the platform except in the following circumstances:</p>
+                <ul>
+                    <li>With your consent</li>
+                    <li>For legal reasons</li>
+                    <li>To protect the rights, property, or safety of our users</li>
+                </ul>
+                
+                <h5>4. Information Security</h5>
+                <p>We work hard to protect our users from unauthorized access, alteration, disclosure, or destruction of information we hold.</p>
+                
+                <h5>5. Data Retention</h5>
+                <p>We retain personal information for as long as necessary to fulfill the purposes for which it was collected and to comply with legal obligations.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validate password confirmation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords don't match");
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('change', validatePassword);
+    confirmPassword.addEventListener('keyup', validatePassword);
+});
+</script>
+{% endblock %}

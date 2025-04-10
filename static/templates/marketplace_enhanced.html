@@ -1,0 +1,696 @@
+{% extends "base.html" %}
+
+{% block title %}Climate-Smart Agriculture Platform | Marketplace{% endblock %}
+
+{% block head_extras %}
+<style>
+    .marketplace-filters {
+        background-color: rgba(var(--bs-light-rgb), .8);
+        border-radius: 0.25rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-product {
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+    
+    .card-product:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .card-img-container {
+        position: relative;
+        height: 180px;
+        overflow: hidden;
+    }
+    
+    .card-img-container img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .product-category {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .product-price {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: var(--bs-success);
+    }
+    
+    .product-seller {
+        font-size: 0.875rem;
+    }
+    
+    .floating-button {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 10;
+    }
+    
+    .verified-badge {
+        color: var(--bs-success);
+        margin-left: 0.25rem;
+    }
+    
+    .category-badge {
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+    
+    .category-badge.seeds {
+        background-color: #e3fcef;
+        color: #0c6e41;
+    }
+    
+    .category-badge.equipment {
+        background-color: #e3f2fd;
+        color: #0c63e4;
+    }
+    
+    .category-badge.produce {
+        background-color: #fff3cd;
+        color: #997404;
+    }
+    
+    .category-badge.service {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+    
+    .category-icon {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    
+    /* Preview images in create listing form */
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .image-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 4px;
+        object-fit: cover;
+        border: 1px solid var(--bs-border-color);
+    }
+    
+    .preview-item {
+        position: relative;
+    }
+    
+    .remove-image {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--bs-danger);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h3">
+                <i class="fas fa-store text-primary me-2"></i> Marketplace
+                <small class="text-muted">Buy, sell, and trade agricultural products</small>
+            </h1>
+        </div>
+    </div>
+    
+    <!-- Marketplace Filters -->
+    <div class="marketplace-filters">
+        <form id="filterForm" action="{{ url_for('main.marketplace') }}" method="get">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All Categories</option>
+                        {% for key, name in categories.items() %}
+                            {% if key != 'all' %}
+                            <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sort_by" class="form-label">Sort By</label>
+                    <select class="form-select" id="sort_by" name="sort_by">
+                        <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" placeholder="e.g. Nairobi, Kenya" value="{{ request.args.get('location', '') }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Marketplace Items Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
+        {% for item in items %}
+        <div class="col">
+            <div class="card card-product h-100">
+                <div class="card-img-container">
+                    <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.title }}">
+                    <span class="product-category badge category-badge {{ item.category }}">
+                        {{ categories[item.category] }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.title }}</h5>
+                    <p class="product-price">{{ item.currency }} {{ "%.2f"|format(item.price) }}</p>
+                    <p class="product-seller mb-1">
+                        <i class="fas fa-user-circle me-1"></i> {{ item.user.farm_name }}
+                        {% if item.user.id == 1 %}
+                        <i class="fas fa-check-circle verified-badge" title="Verified Seller"></i>
+                        {% endif %}
+                    </p>
+                    <p class="card-text small text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ item.location }}
+                    </p>
+                    <p class="card-text">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-primary btn-sm view-item" data-item-id="{{ item.id }}">
+                            <i class="fas fa-eye me-1"></i> View Details
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm contact-seller" data-seller-id="{{ item.user.id }}" data-item-id="{{ item.id }}">
+                            <i class="fas fa-comment me-1"></i> Contact Seller
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- No Results Message -->
+    {% if items|length == 0 %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i> No marketplace items found matching your criteria. Try different filters or create a new listing.
+    </div>
+    {% endif %}
+    
+    <!-- Create Listing Button (Floating) -->
+    <div class="floating-button">
+        <button type="button" class="btn btn-primary btn-lg rounded-circle shadow" data-bs-toggle="modal" data-bs-target="#createListingModal">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+    
+    <!-- Create Listing Modal -->
+    <div class="modal fade" id="createListingModal" tabindex="-1" aria-labelledby="createListingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="createListingModalLabel"><i class="fas fa-tag me-2"></i>Create Marketplace Listing</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createListingForm" action="{{ url_for('main.create_listing') }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Listing Information -->
+                        <h5 class="mb-3">Item Details</h5>
+                        <div class="mb-3">
+                            <label for="listing_title" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="listing_title" name="title" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="listing_category" class="form-label">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" id="listing_category" name="category" required>
+                                    <option value="" selected disabled>Select a category</option>
+                                    {% for key, name in categories.items() %}
+                                        {% if key != 'all' %}
+                                        <option value="{{ key }}">{{ name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="listing_location" class="form-label">Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="listing_location" name="location" required placeholder="e.g. Nairobi, Kenya">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="listing_price" class="form-label">Price <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <select class="form-select" style="max-width: 100px;" id="listing_currency" name="currency">
+                                        <option value="KES">KES</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                    <input type="number" class="form-control" id="listing_price" name="price" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="listing_quantity" class="form-label">Quantity Available</label>
+                                <input type="number" class="form-control" id="listing_quantity" name="quantity" min="1" value="1">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="listing_description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="listing_description" name="description" rows="4" required placeholder="Provide detailed information about your product or service"></textarea>
+                        </div>
+                        
+                        <!-- Image Upload -->
+                        <div class="mb-3">
+                            <label for="listing_images" class="form-label">Images (up to 5) <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="listing_images" name="images" multiple accept="image/*" required>
+                            <div class="form-text">Upload up to 5 images. First image will be the main listing image.</div>
+                            <div class="image-preview-container" id="imagePreviewContainer"></div>
+                        </div>
+                        
+                        <!-- Contact Information -->
+                        <h5 class="mt-4 mb-3">Contact Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="contact_name" class="form-label">Contact Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="contact_name" name="contact_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="contact_phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contact_email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="contact_email" name="contact_email" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="show_contact_info" name="show_contact_info" checked>
+                            <label class="form-check-label" for="show_contact_info">
+                                Display contact information publicly (if unchecked, buyers will contact you through platform messaging)
+                            </label>
+                        </div>
+                        
+                        <!-- Terms Agreement -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agree_marketplace_terms" name="agree_marketplace_terms" required>
+                            <label class="form-check-label" for="agree_marketplace_terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#marketplaceTermsModal">Marketplace Terms</a> and guarantee that this item is accurately represented <span class="text-danger">*</span>
+                            </label>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> By creating this listing, you confirm that you have the right to sell this item and that the information provided is accurate. Fraudulent listings will be removed and may result in account suspension.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="createListingForm" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Create Listing
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Item Details Modal -->
+    <div class="modal fade" id="itemDetailsModal" tabindex="-1" aria-labelledby="itemDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemDetailsModalLabel">Item Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="itemImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner" id="modalCarouselInner">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#itemImageCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#itemImageCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 id="modalItemTitle"></h3>
+                            <p class="product-price mb-2" id="modalItemPrice"></p>
+                            <p class="mb-1">
+                                <span class="badge category-badge" id="modalItemCategory"></span>
+                            </p>
+                            <p class="product-seller mt-3 mb-1">
+                                <i class="fas fa-user-circle me-1"></i> <span id="modalItemSeller"></span>
+                                <span id="modalVerifiedBadge" class="d-none">
+                                    <i class="fas fa-check-circle verified-badge" title="Verified Seller"></i>
+                                </span>
+                            </p>
+                            <p class="small text-muted mb-3">
+                                <i class="fas fa-map-marker-alt me-1"></i> <span id="modalItemLocation"></span>
+                            </p>
+                            <div class="mt-3" id="modalItemDescription"></div>
+                            
+                            <div class="mt-4" id="contactInfoSection">
+                                <h5>Contact Information</h5>
+                                <p class="mb-1">
+                                    <i class="fas fa-user me-2"></i> <span id="modalContactName"></span>
+                                </p>
+                                <p class="mb-1">
+                                    <i class="fas fa-phone me-2"></i> <span id="modalContactPhone"></span>
+                                </p>
+                                <p class="mb-1">
+                                    <i class="fas fa-envelope me-2"></i> <span id="modalContactEmail"></span>
+                                </p>
+                            </div>
+                            
+                            <div class="mt-4 d-flex gap-2">
+                                <button type="button" class="btn btn-primary" id="modalContactSeller" data-seller-id="" data-item-id="">
+                                    <i class="fas fa-comment me-1"></i> Contact Seller
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="modalSaveItem">
+                                    <i class="far fa-bookmark me-1"></i> Save Item
+                                </button>
+                                <a href="#" class="btn btn-outline-danger" id="modalReportItem">
+                                    <i class="fas fa-flag me-1"></i> Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Marketplace Terms Modal -->
+    <div class="modal fade" id="marketplaceTermsModal" tabindex="-1" aria-labelledby="marketplaceTermsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="marketplaceTermsModalLabel">Marketplace Terms & Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5>1. Listing Guidelines</h5>
+                    <p>All items listed on the marketplace must:</p>
+                    <ul>
+                        <li>Be accurately described with clear images</li>
+                        <li>Comply with all applicable laws and regulations</li>
+                        <li>Not infringe on intellectual property rights</li>
+                        <li>Be priced fairly and competitively</li>
+                    </ul>
+                    
+                    <h5>2. Prohibited Items</h5>
+                    <p>The following items are prohibited:</p>
+                    <ul>
+                        <li>Illegal goods or services</li>
+                        <li>Counterfeit or stolen items</li>
+                        <li>Dangerous or hazardous materials</li>
+                        <li>Items that promote discrimination or hate speech</li>
+                    </ul>
+                    
+                    <h5>3. Transaction Rules</h5>
+                    <p>When engaging in marketplace transactions:</p>
+                    <ul>
+                        <li>Buyers and sellers are responsible for finalizing payment details</li>
+                        <li>The platform does not guarantee transactions or act as an escrow service</li>
+                        <li>We recommend using secure payment methods and meeting in public places</li>
+                        <li>Report any suspicious activity immediately</li>
+                    </ul>
+                    
+                    <h5>4. Dispute Resolution</h5>
+                    <p>In case of disputes:</p>
+                    <ul>
+                        <li>Buyers and sellers should first attempt to resolve issues directly</li>
+                        <li>If unsuccessful, report the issue through our formal reporting system</li>
+                        <li>The platform may mediate but cannot guarantee resolution</li>
+                        <li>For serious violations, relevant authorities may be contacted</li>
+                    </ul>
+                    
+                    <h5>5. Platform Fees</h5>
+                    <p>Currently, the marketplace charges no fees for listing or selling items. This policy may change with prior notice to users.</p>
+                    
+                    <h5>6. Account Termination</h5>
+                    <p>The platform reserves the right to remove listings or terminate accounts that violate these terms or engage in fraudulent activity.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Image preview for create listing form
+    const imageInput = document.getElementById('listing_images');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const maxImages = 5;
+    
+    imageInput.addEventListener('change', function() {
+        previewContainer.innerHTML = '';
+        
+        if (this.files.length > maxImages) {
+            alert(`You can upload a maximum of ${maxImages} images.`);
+            this.value = '';
+            return;
+        }
+        
+        for (let i = 0; i < this.files.length; i++) {
+            const file = this.files[i];
+            
+            if (!file.type.startsWith('image/')) {
+                continue;
+            }
+            
+            const reader = new FileReader();
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'image-preview';
+                img.alt = `Preview ${i+1}`;
+                
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-image';
+                removeBtn.innerHTML = '×';
+                removeBtn.addEventListener('click', function() {
+                    previewItem.remove();
+                    // Note: This doesn't actually remove the file from the input
+                    // In a real app, you'd need to handle this with a more complex solution
+                });
+                
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                previewContainer.appendChild(previewItem);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Form filter submission
+    const filterForm = document.getElementById('filterForm');
+    const categorySelect = document.getElementById('category');
+    const sortBySelect = document.getElementById('sort_by');
+    
+    categorySelect.addEventListener('change', function() {
+        filterForm.submit();
+    });
+    
+    sortBySelect.addEventListener('change', function() {
+        filterForm.submit();
+    });
+    
+    // Create listing form submission
+    const createListingForm = document.getElementById('createListingForm');
+    
+    createListingForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // In a real implementation, this would be an AJAX submission
+        // or a regular form submission handled by the server
+        
+        // Simulating successful submission
+        const createListingModal = bootstrap.Modal.getInstance(document.getElementById('createListingModal'));
+        createListingModal.hide();
+        
+        // Reset form
+        createListingForm.reset();
+        previewContainer.innerHTML = '';
+        
+        // Show success alert (in a real app)
+        alert('Listing created successfully! It will be reviewed and published shortly.');
+    });
+    
+    // View Item Details
+    const viewItemButtons = document.querySelectorAll('.view-item');
+    
+    viewItemButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            
+            // In a real implementation, fetch item details via AJAX
+            // Here we're using the existing items array for demo
+            const item = {{ items|tojson }}.find(item => item.id == itemId);
+            
+            if (item) {
+                document.getElementById('modalItemTitle').textContent = item.title;
+                document.getElementById('modalItemPrice').textContent = `${item.currency} ${item.price.toFixed(2)}`;
+                document.getElementById('modalItemCategory').textContent = {{ categories|tojson }}[item.category];
+                document.getElementById('modalItemCategory').className = `badge category-badge ${item.category}`;
+                document.getElementById('modalItemSeller').textContent = item.user.farm_name;
+                document.getElementById('modalItemLocation').textContent = item.location;
+                document.getElementById('modalItemDescription').innerHTML = `<p>${item.description}</p>`;
+                
+                // Set contact info (in a real app, this would be dynamic based on seller's preferences)
+                document.getElementById('modalContactName').textContent = item.user.username;
+                document.getElementById('modalContactPhone').textContent = '+254 123 456 789';
+                document.getElementById('modalContactEmail').textContent = `${item.user.username.toLowerCase()}@example.com`;
+                
+                // Set up contact seller button
+                const modalContactSeller = document.getElementById('modalContactSeller');
+                modalContactSeller.setAttribute('data-seller-id', item.user.id);
+                modalContactSeller.setAttribute('data-item-id', item.id);
+                
+                // Show verified badge if applicable
+                const modalVerifiedBadge = document.getElementById('modalVerifiedBadge');
+                if (item.user.id === 1) {
+                    modalVerifiedBadge.classList.remove('d-none');
+                } else {
+                    modalVerifiedBadge.classList.add('d-none');
+                }
+                
+                // Setup carousel (in a real app, would use actual item images)
+                const carouselInner = document.getElementById('modalCarouselInner');
+                carouselInner.innerHTML = '';
+                
+                // Just using the same image multiple times for demo
+                for (let i = 0; i < 3; i++) {
+                    const div = document.createElement('div');
+                    div.className = i === 0 ? 'carousel-item active' : 'carousel-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = item.image_url;
+                    img.className = 'd-block w-100';
+                    img.alt = item.title;
+                    
+                    div.appendChild(img);
+                    carouselInner.appendChild(div);
+                }
+                
+                // Show modal
+                const itemDetailsModal = new bootstrap.Modal(document.getElementById('itemDetailsModal'));
+                itemDetailsModal.show();
+            }
+        });
+    });
+    
+    // Contact seller button functionality
+    const contactSellerButtons = document.querySelectorAll('.contact-seller');
+    
+    contactSellerButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const sellerId = this.getAttribute('data-seller-id');
+            const itemId = this.getAttribute('data-item-id');
+            
+            // Redirect to messages page with seller ID and item ID
+            window.location.href = `/messages/${sellerId}?item_id=${itemId}`;
+        });
+    });
+    
+    // Modal contact seller button
+    const modalContactSeller = document.getElementById('modalContactSeller');
+    if (modalContactSeller) {
+        modalContactSeller.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const sellerId = this.getAttribute('data-seller-id');
+            
+            // Redirect to messages page with seller ID and item ID
+            window.location.href = `/messages/${sellerId}?item_id=${itemId}`;
+        });
+    }
+    
+    // Modal save item button
+    const modalSaveItem = document.getElementById('modalSaveItem');
+    if (modalSaveItem) {
+        modalSaveItem.addEventListener('click', function() {
+            if (this.querySelector('i').classList.contains('far')) {
+                this.querySelector('i').classList.remove('far');
+                this.querySelector('i').classList.add('fas');
+                this.innerHTML = this.innerHTML.replace('Save Item', 'Saved');
+            } else {
+                this.querySelector('i').classList.remove('fas');
+                this.querySelector('i').classList.add('far');
+                this.innerHTML = this.innerHTML.replace('Saved', 'Save Item');
+            }
+        });
+    }
+    
+    // Modal report item link
+    const modalReportItem = document.getElementById('modalReportItem');
+    if (modalReportItem) {
+        modalReportItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Close the item details modal
+            const itemDetailsModal = bootstrap.Modal.getInstance(document.getElementById('itemDetailsModal'));
+            itemDetailsModal.hide();
+            
+            // Redirect to fraud report page
+            window.location.href = '/report-fraud';
+        });
+    }
+});
+</script>
+{% endblock %}

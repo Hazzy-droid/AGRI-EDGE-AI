@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Climate-Smart Agriculture Platform{% endblock %}</title>
+    
+    <!-- Bootstrap CSS (Replit Dark Theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Leaflet for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    {% block head_extras %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar" id="sidebar">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <i class="fas fa-leaf me-2 fs-4"></i>
+            <span class="fs-4 d-none d-md-inline">AgriEdge AI</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.path == url_for('main.dashboard') %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    <span class="d-none d-md-inline">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.satellite') }}" class="nav-link {% if request.path == url_for('main.satellite') %}active{% endif %}">
+                    <i class="fas fa-satellite me-2"></i>
+                    <span class="d-none d-md-inline">Satellite</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.weather') }}" class="nav-link {% if request.path == url_for('main.weather') %}active{% endif %}">
+                    <i class="fas fa-cloud-sun me-2"></i>
+                    <span class="d-none d-md-inline">Weather</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.soil') }}" class="nav-link {% if request.path == url_for('main.soil') %}active{% endif %}">
+                    <i class="fas fa-seedling me-2"></i>
+                    <span class="d-none d-md-inline">Soil</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.recommendations') }}" class="nav-link {% if request.path == url_for('main.recommendations') %}active{% endif %}">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    <span class="d-none d-md-inline">Recommendations</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.community') }}" class="nav-link {% if request.path == url_for('main.community') %}active{% endif %}">
+                    <i class="fas fa-users me-2"></i>
+                    <span class="d-none d-md-inline">Community</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.marketplace') }}" class="nav-link {% if request.path == url_for('main.marketplace') %}active{% endif %}">
+                    <i class="fas fa-store me-2"></i>
+                    <span class="d-none d-md-inline">Marketplace</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.messages') }}" class="nav-link {% if request.path.startswith('/messages') %}active{% endif %}">
+                    <i class="fas fa-comments me-2"></i>
+                    <span class="d-none d-md-inline">Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.learning_dashboard') }}" class="nav-link {% if request.path.startswith('/learning') %}active{% endif %}">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span class="d-none d-md-inline">Learning</span>
+                    {% if current_user is defined and current_user.is_authenticated and current_user.level > 1 %}
+                    <span class="badge bg-success rounded-pill ms-1 d-none d-md-inline">Lvl {{ current_user.level }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('sustainability.index') }}" class="nav-link {% if request.path.startswith('/sustainability') %}active{% endif %}">
+                    <i class="fas fa-leaf me-2"></i>
+                    <span class="d-none d-md-inline">Sustainability</span>
+                </a>
+            </li>
+        </ul>
+        <hr>
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle me-2 fs-5"></i>
+                <strong class="d-none d-md-inline">User</strong>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                <li><a class="dropdown-item" href="{{ url_for('main.settings') }}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.report_fraud') }}"><i class="fas fa-exclamation-triangle me-2"></i>Report Fraud</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" id="sidebarToggle">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="d-flex align-items-center ms-auto">
+                    <div class="connection-status me-3">
+                        <span id="connectionStatus" class="badge bg-success"><i class="fas fa-wifi me-1"></i> Online</span>
+                    </div>
+                    <div class="language-selector me-3">
+                        <select class="form-select form-select-sm" id="languageSelector">
+                            <option value="en">English</option>
+                            <option value="fr">French</option>
+                            <option value="sw">Swahili</option>
+                            <option value="ha">Hausa</option>
+                            <option value="yo">Yoruba</option>
+                            <option value="am">Amharic</option>
+                            <option value="ar">Arabic</option>
+                        </select>
+                    </div>
+                    <div class="weather-preview me-3 d-none d-md-flex">
+                        <i class="fas fa-cloud-sun me-1"></i>
+                        <span id="tempPreview">25°C</span>
+                    </div>
+                    {% if current_user.is_authenticated %}
+                    <div class="me-2">
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container-fluid p-3">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer mt-auto py-2">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">© 2025 Climate-Smart Agriculture Platform</span>
+                    <span class="text-muted"><i class="fas fa-info-circle me-1"></i> <span id="lastUpdated">Last updated: Now</span></span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- AI Chatbot Assistant -->
+    <div id="chat-container" class="chat-hidden">
+        <div class="chat-header">
+            <div class="chat-header-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="chat-header-title">Farming Assistant</div>
+            <div class="chat-close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div class="chat-body">
+            <div id="chat-messages"></div>
+        </div>
+        <div class="chat-footer">
+            <div class="chat-input-wrapper">
+                <input type="text" id="message-input" class="chat-input" placeholder="Ask me anything about farming...">
+                <button id="send-button" class="chat-send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="chat-context-wrapper">
+                <select id="context-selector" class="form-select form-select-sm">
+                    <option value="general_farming">General Farming Advice</option>
+                    <option value="weather">Weather Interpretation</option>
+                    <option value="soil_health">Soil Health Management</option>
+                    <option value="crop_advice">Crop-Specific Advice</option>
+                    <option value="livestock">Livestock Management</option>
+                    <option value="platform_help">Platform Help</option>
+                </select>
+            </div>
+            <div id="quick-responses" class="quick-responses"></div>
+        </div>
+    </div>
+    
+    <!-- Chat Toggle Button -->
+    <div id="chat-toggle">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- Include Video Modal Component -->
+    {% include 'components/video_modal.html' %}
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/translations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/offline.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/video-tutorials.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-store me-2"></i>
+                        <span class="translate" data-key="marketplace">Farmer Marketplace</span>
+                    </h2>
+                    <p class="card-text translate" data-key="marketplace_desc">Buy and sell farming equipment, produce, seeds, and services within the farming community</p>
+                    
+                    <!-- Hero Banner with Background Image -->
+                    <div class="marketplace-hero mb-4 rounded position-relative" style="background: url('https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80') center/cover no-repeat; height: 300px;">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 rounded" style="background-color: rgba(0,0,0,0.5)"></div>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center text-white w-75">
+                            <h3 class="translate" data-key="marketplace_banner_title">Connect Directly with Local Farmers</h3>
+                            <p class="translate" data-key="marketplace_banner_subtitle">Buy and sell climate-smart agricultural products and services</p>
+                            <a href="#create-listing" class="btn btn-success mt-2 translate" data-key="create_listing" data-bs-toggle="modal" data-bs-target="#createListingModal">
+                                <i class="fas fa-plus-circle me-2"></i>Create Listing
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Marketplace Navigation and Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <ul class="nav nav-pills marketplace-filters">
+                                {% for key, name in categories.items() %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if selected_category == key %}active{% endif %}" href="?category={{ key }}&sort_by={{ sort_by }}">
+                                        {{ name }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <select class="form-select" id="sortBy" onchange="window.location.href = '?category={{ selected_category }}&sort_by=' + this.value">
+                                    <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Marketplace Content -->
+    <div class="row">
+        <!-- Main Content - Product Grid -->
+        <div class="col-lg-9">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% if items %}
+                    {% for item in items %}
+                    <div class="col">
+                        <div class="card h-100 marketplace-item">
+                            <div class="position-relative">
+                                <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <!-- Category Badge -->
+                                    {% if item.category == 'seeds' %}
+                                    <span class="badge bg-success">Seeds & Plants</span>
+                                    {% elif item.category == 'equipment' %}
+                                    <span class="badge bg-primary">Equipment</span>
+                                    {% elif item.category == 'produce' %}
+                                    <span class="badge bg-info">Produce</span>
+                                    {% elif item.category == 'service' %}
+                                    <span class="badge bg-warning">Service</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.title }}</h5>
+                                <p class="card-text">{{ item.description|truncate(100) }}</p>
+                                <p class="card-text fw-bold text-success">{{ item.price }} {{ item.currency }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i> {{ item.location }}
+                                    </small>
+                                    <small class="text-muted">
+                                        {% if (now - item.created_at).days == 0 %}
+                                            Today
+                                        {% elif (now - item.created_at).days == 1 %}
+                                            Yesterday
+                                        {% else %}
+                                            {{ item.created_at.strftime('%b %d, %Y') }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary view-item-btn" data-item-id="{{ item.id }}">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-success contact-seller-btn" data-item-id="{{ item.id }}" data-seller-id="{{ item.user.id }}">
+                                            <i class="fas fa-comment me-1"></i> Contact
+                                        </button>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-link save-item-btn" data-item-id="{{ item.id }}">
+                                        <i class="far fa-bookmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Load More Button -->
+                    <div class="col-12 text-center mt-4 mb-4">
+                        <button class="btn btn-outline-primary load-more-button">
+                            <i class="fas fa-sync me-2"></i> Load More Items
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span class="translate" data-key="no_items">No items available for the selected category</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Search and Filters Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        <span class="translate" data-key="search_filters">Search & Filters</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="searchKeyword" class="form-label translate" data-key="keyword">Keyword</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchKeyword" placeholder="Search...">
+                                <button class="btn btn-outline-primary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="locationFilter" class="form-label translate" data-key="location">Location</label>
+                            <select class="form-select" id="locationFilter">
+                                <option value="all">All Locations</option>
+                                <option value="nairobi">Nairobi</option>
+                                <option value="mombasa">Mombasa</option>
+                                <option value="kisumu">Kisumu</option>
+                                <option value="nakuru">Nakuru</option>
+                                <option value="machakos">Machakos</option>
+                                <option value="mwea">Mwea</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="priceRange" class="form-label translate" data-key="price_range">Price Range</label>
+                            <div class="row g-2">
+                                <div class="col">
+                                    <input type="number" class="form-control" id="minPrice" placeholder="Min">
+                                </div>
+                                <div class="col-auto">to</div>
+                                <div class="col">
+                                    <input type="number" class="form-control" id="maxPrice" placeholder="Max">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary w-100" id="applyFiltersBtn">
+                            <i class="fas fa-filter me-2"></i>
+                            <span class="translate" data-key="apply_filters">Apply Filters</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Your Listings Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        <span class="translate" data-key="your_listings">Your Listings</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="fw-bold">Total Listings:</span> <span class="badge bg-primary">3</span>
+                        </div>
+                        <div>
+                            <span class="fw-bold">Active:</span> <span class="badge bg-success">2</span>
+                        </div>
+                        <div>
+                            <span class="fw-bold">Sold:</span> <span class="badge bg-secondary">1</span>
+                        </div>
+                    </div>
+                    <a href="#create-listing" class="btn btn-outline-success w-100 mb-3" data-bs-toggle="modal" data-bs-target="#createListingModal">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span class="translate" data-key="create_new_listing">Create New Listing</span>
+                    </a>
+                    <a href="#view-listings" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-list-alt me-2"></i>
+                        <span class="translate" data-key="manage_listings">Manage Your Listings</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Popular Categories Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2 text-warning"></i>
+                        <span class="translate" data-key="popular_categories">Popular Categories</span>
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="?category=seeds&sort_by={{ sort_by }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-seedling text-success me-2"></i> Seeds & Plants
+                        </div>
+                        <span class="badge bg-primary rounded-pill">24</span>
+                    </a>
+                    <a href="?category=equipment&sort_by={{ sort_by }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-tools text-primary me-2"></i> Equipment & Tools
+                        </div>
+                        <span class="badge bg-primary rounded-pill">38</span>
+                    </a>
+                    <a href="?category=produce&sort_by={{ sort_by }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-carrot text-warning me-2"></i> Farm Produce
+                        </div>
+                        <span class="badge bg-primary rounded-pill">57</span>
+                    </a>
+                    <a href="?category=service&sort_by={{ sort_by }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-hands-helping text-info me-2"></i> Services
+                        </div>
+                        <span class="badge bg-primary rounded-pill">19</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Tips Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <span class="translate" data-key="marketplace_tips">Marketplace Tips</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="translate" data-key="tip_1">Always meet in public places for transactions</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="translate" data-key="tip_2">Verify product quality before purchasing</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="translate" data-key="tip_3">Use the in-app messaging for secure communications</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="translate" data-key="tip_4">Report suspicious listings or users</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Listing Modal -->
+<div class="modal fade" id="createListingModal" tabindex="-1" aria-labelledby="createListingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createListingModalLabel">
+                    <i class="fas fa-tag me-2"></i>
+                    <span class="translate" data-key="create_listing">Create Listing</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createListingForm">
+                    <div class="mb-3">
+                        <label for="listingTitle" class="form-label translate" data-key="listing_title">Title</label>
+                        <input type="text" class="form-control" id="listingTitle" placeholder="Enter a title for your listing">
+                    </div>
+                    <div class="mb-3">
+                        <label for="listingDescription" class="form-label translate" data-key="listing_description">Description</label>
+                        <textarea class="form-control" id="listingDescription" rows="5" placeholder="Describe your product or service in detail..."></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="listingCategory" class="form-label translate" data-key="listing_category">Category</label>
+                            <select class="form-select" id="listingCategory">
+                                <option value="seeds">Seeds & Plants</option>
+                                <option value="equipment">Equipment & Tools</option>
+                                <option value="produce">Farm Produce</option>
+                                <option value="service">Services</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="listingLocation" class="form-label translate" data-key="listing_location">Location</label>
+                            <input type="text" class="form-control" id="listingLocation" placeholder="Enter your location">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="listingPrice" class="form-label translate" data-key="listing_price">Price</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="listingPrice" placeholder="0.00">
+                                <select class="form-select" id="listingCurrency" style="max-width: 100px;">
+                                    <option value="KES">KES</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="listingQuantity" class="form-label translate" data-key="listing_quantity">Quantity</label>
+                            <input type="number" class="form-control" id="listingQuantity" placeholder="1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="listingImages" class="form-label translate" data-key="listing_images">Images</label>
+                        <input type="file" class="form-control" id="listingImages" multiple>
+                        <small class="form-text text-muted translate" data-key="image_tip">Upload up to 5 images. First image will be the main display image.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="listingTags" class="form-label translate" data-key="listing_tags">Tags</label>
+                        <input type="text" class="form-control" id="listingTags" placeholder="Add tags separated by commas (e.g., organic, certified, wholesale)">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    <span class="translate" data-key="cancel">Cancel</span>
+                </button>
+                <button type="button" class="btn btn-success" id="submitListing">
+                    <i class="fas fa-tag me-2"></i>
+                    <span class="translate" data-key="publish_listing">Publish Listing</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Detail Modal -->
+<div class="modal fade" id="itemDetailModal" tabindex="-1" aria-labelledby="itemDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemDetailModalLabel">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="itemCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="https://images.unsplash.com/photo-1557636222-d6924f30a4e4" class="d-block w-100" alt="Item Image 1">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="https://images.unsplash.com/photo-1640154003625-2d2c02e95d32" class="d-block w-100" alt="Item Image 2">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="https://images.unsplash.com/photo-1541604193435-22287d88fc2a" class="d-block w-100" alt="Item Image 3">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#itemCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#itemCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 id="modalItemTitle">Certified Maize Seeds - Climate Resilient Variety</h3>
+                        <p class="text-success fs-4 fw-bold" id="modalItemPrice">1,250.00 KES</p>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar me-2">
+                                <img src="https://ui-avatars.com/api/?name=John+Farmer&background=random" class="rounded-circle" width="40" height="40">
+                            </div>
+                            <div>
+                                <h6 class="mb-0" id="modalItemSeller">John Farmer</h6>
+                                <small class="text-muted" id="modalItemFarm">Green Valley Farm</small>
+                            </div>
+                        </div>
+                        <p class="mb-3">
+                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                            <span id="modalItemLocation">Nakuru, Kenya</span>
+                        </p>
+                        <div class="mb-3">
+                            <span class="badge bg-success me-1" id="modalItemCategory">Seeds</span>
+                            <span class="badge bg-secondary me-1">Drought Resistant</span>
+                            <span class="badge bg-secondary me-1">Certified</span>
+                            <span class="badge bg-secondary">High Yield</span>
+                        </div>
+                        <p id="modalItemDescription">Drought-resistant maize seeds perfect for regions with inconsistent rainfall. These seeds have been tested with our climate prediction models.</p>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" id="modalContactSeller">
+                                <i class="fas fa-comment me-2"></i> Contact Seller
+                            </button>
+                            <button class="btn btn-outline-primary" id="modalSaveItem">
+                                <i class="far fa-bookmark me-2"></i> Save Item
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .marketplace-filters .nav-link {
+        color: var(--bs-dark);
+    }
+    
+    .marketplace-filters .nav-link.active {
+        background-color: var(--bs-success);
+        color: white;
+    }
+    
+    .marketplace-item {
+        transition: transform 0.2s ease;
+    }
+    
+    .marketplace-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .marketplace-hero {
+        overflow: hidden;
+    }
+    
+    .save-item-btn:hover .fa-bookmark,
+    .save-item-btn.saved .fa-bookmark {
+        color: var(--bs-warning);
+    }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View item button functionality
+    const viewItemButtons = document.querySelectorAll('.view-item-btn');
+    viewItemButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            // In a real app, this would fetch the item details from the server
+            
+            // Show the modal
+            const itemDetailModal = new bootstrap.Modal(document.getElementById('itemDetailModal'));
+            itemDetailModal.show();
+        });
+    });
+    
+    // Contact seller button functionality
+    const contactSellerButtons = document.querySelectorAll('.contact-seller-btn');
+    contactSellerButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const sellerId = this.getAttribute('data-seller-id');
+            
+            // Redirect to messages page with seller ID and item ID
+            window.location.href = `/messages/${sellerId}?item_id=${itemId}`;
+        });
+    });
+    
+    // Save item button functionality
+    const saveItemButtons = document.querySelectorAll('.save-item-btn');
+    saveItemButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (this.classList.contains('saved')) {
+                this.classList.remove('saved');
+                this.querySelector('i').classList.remove('fas');
+                this.querySelector('i').classList.add('far');
+            } else {
+                this.classList.add('saved');
+                this.querySelector('i').classList.remove('far');
+                this.querySelector('i').classList.add('fas');
+            }
+        });
+    });
+    
+    // Load more button functionality
+    const loadMoreButton = document.querySelector('.load-more-button');
+    if (loadMoreButton) {
+        loadMoreButton.addEventListener('click', function() {
+            // In a real app, this would load more items from the server
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Loading...';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-check me-2"></i> No more items to load';
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-outline-secondary');
+                this.disabled = true;
+            }, 1500);
+        });
+    }
+    
+    // Apply filters button functionality
+    const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function() {
+            const keyword = document.getElementById('searchKeyword').value;
+            const location = document.getElementById('locationFilter').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            
+            // In a real app, this would apply the filters
+            alert(`Filtering with: Keyword=${keyword}, Location=${location}, Price Range=${minPrice}-${maxPrice}`);
+        });
+    }
+    
+    // Submit listing form
+    const submitListingButton = document.getElementById('submitListing');
+    if (submitListingButton) {
+        submitListingButton.addEventListener('click', function() {
+            const title = document.getElementById('listingTitle').value;
+            const description = document.getElementById('listingDescription').value;
+            const price = document.getElementById('listingPrice').value;
+            
+            if (title.trim() === '' || description.trim() === '' || price.trim() === '') {
+                alert('Please fill out all required fields (title, description, and price).');
+                return;
+            }
+            
+            // In a real app, this would submit the listing to the server
+            alert('Listing submitted successfully!');
+            
+            // Close the modal and reset form
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createListingModal'));
+            modal.hide();
+            document.getElementById('createListingForm').reset();
+        });
+    }
+    
+    // Modal contact seller button
+    const modalContactSeller = document.getElementById('modalContactSeller');
+    if (modalContactSeller) {
+        modalContactSeller.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const sellerId = this.getAttribute('data-seller-id');
+            
+            // Redirect to messages page with seller ID and item ID
+            window.location.href = `/messages/${sellerId}?item_id=${itemId}`;
+        });
+    }
+    
+    // Modal save item button
+    const modalSaveItem = document.getElementById('modalSaveItem');
+    if (modalSaveItem) {
+        modalSaveItem.addEventListener('click', function() {
+            if (this.querySelector('i').classList.contains('far')) {
+                this.querySelector('i').classList.remove('far');
+                this.querySelector('i').classList.add('fas');
+                this.innerHTML = this.innerHTML.replace('Save Item', 'Saved');
+            } else {
+                this.querySelector('i').classList.remove('fas');
+                this.querySelector('i').classList.add('far');
+                this.innerHTML = this.innerHTML.replace('Saved', 'Save Item');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

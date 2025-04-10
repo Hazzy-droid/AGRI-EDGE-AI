@@ -1,0 +1,591 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ practice.name }} | Sustainable Farming Practices{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0"><i class="fas fa-seedling text-success me-2"></i> {{ practice.name }}</h1>
+                <div>
+                    <a href="{{ url_for('sustainability.practices') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to All Practices
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted mt-2">Category: <span class="badge bg-secondary">{{ practice.category|title }}</span></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <span class="badge bg-primary me-2">Impact: {{ practice.impact_level }}/5</span>
+                            <span class="badge bg-secondary">Difficulty: {{ practice.difficulty }}/5</span>
+                        </div>
+                        <span class="badge bg-success">{{ practice.points_awarded }} points</span>
+                    </div>
+
+                    <h3 class="h5 mb-3">Description</h3>
+                    <p>{{ practice.description }}</p>
+
+                    <h3 class="h5 mb-3">Implementation Steps</h3>
+                    <div class="bg-light p-3 rounded mb-4">
+                        {% if practice.implementation_steps %}
+                            {{ practice.implementation_steps|safe }}
+                        {% else %}
+                            <ol>
+                                <li>Research the specific requirements for implementing this practice on your farm.</li>
+                                <li>Plan the implementation timeline and resources needed.</li>
+                                <li>Document the before state with photos and measurements.</li>
+                                <li>Implement the practice following best guidelines.</li>
+                                <li>Document the after state and monitor the results over time.</li>
+                            </ol>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="h5 mb-3">Benefits</h3>
+                    <div class="mb-4">
+                        {% if practice.benefits %}
+                            <ul class="list-group list-group-flush">
+                                {% for benefit in practice.benefits.split('|') %}
+                                    <li class="list-group-item bg-light">
+                                        <i class="fas fa-check-circle text-success me-2"></i> {{ benefit }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-check-circle text-success me-2"></i> Improves soil health and structure
+                                </li>
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-check-circle text-success me-2"></i> Reduces soil erosion and nutrient runoff
+                                </li>
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-check-circle text-success me-2"></i> Increases biodiversity and ecosystem resilience
+                                </li>
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-check-circle text-success me-2"></i> Helps mitigate climate change impacts
+                                </li>
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="h5 mb-3">Challenges & Considerations</h3>
+                    <div class="mb-4">
+                        {% if practice.challenges %}
+                            <ul class="list-group list-group-flush">
+                                {% for challenge in practice.challenges.split('|') %}
+                                    <li class="list-group-item bg-light">
+                                        <i class="fas fa-exclamation-triangle text-warning me-2"></i> {{ challenge }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i> May require initial investment in equipment or materials
+                                </li>
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i> Learning curve for proper implementation
+                                </li>
+                                <li class="list-group-item bg-light">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i> Results may take time to become visible
+                                </li>
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    {% if practice.resources %}
+                        <h3 class="h5 mb-3">Additional Resources</h3>
+                        <div class="mb-4">
+                            {{ practice.resources|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if user_practice %}
+                        <div class="alert {% if user_practice.status == 'verified' %}alert-success{% elif user_practice.status == 'implemented' %}alert-info{% else %}alert-warning{% endif %} mt-4">
+                            <div class="d-flex">
+                                {% if user_practice.status == 'verified' %}
+                                    <div class="me-3">
+                                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="alert-heading">Practice Verified!</h4>
+                                        <p class="mb-0">You have successfully implemented and verified this practice on {{ (user_practice.verification_date|string)[:10] }}.</p>
+                                        <p class="mb-0">Points earned: <strong>{{ practice.points_awarded }}</strong></p>
+                                        
+                                        {% if user_practice.carbon_sequestered %}
+                                            <div class="mt-2">
+                                                <p class="mb-0"><i class="fas fa-leaf text-success me-1"></i> Estimated carbon impact: <strong>{{ "%.2f"|format(user_practice.carbon_sequestered/1000) }} tons CO₂e</strong> per year</p>
+                                                <small class="text-muted">Based on {{ user_practice.area_size or 0 }} hectares using {{ user_practice.carbon_methodology or 'basic estimation' }}</small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% elif user_practice.status == 'implemented' %}
+                                    <div class="me-3">
+                                        <i class="fas fa-clock fa-2x text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="alert-heading">Awaiting Verification</h4>
+                                        <p class="mb-0">You marked this practice as implemented on {{ (user_practice.implementation_date|string)[:10] }}.</p>
+                                        <p class="mb-0">It is awaiting verification. You will earn {{ practice.points_awarded }} points upon verification.</p>
+                                        
+                                        {% if user_practice.farm_area_name %}
+                                            <p class="mt-2 mb-0"><i class="fas fa-map-marker-alt me-1"></i> Implementation area: <strong>{{ user_practice.farm_area_name }}</strong> ({{ user_practice.area_size or 0 }} hectares)</p>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="me-3">
+                                        <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="alert-heading">Implementation Rejected</h4>
+                                        <p class="mb-0">Your implementation was rejected for the following reason:</p>
+                                        <p class="mb-0">{{ user_practice.rejection_reason or 'No specific reason provided.' }}</p>
+                                        <p class="mt-2 mb-0">You may modify your implementation and resubmit.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Implementation Details Section (if practice is implemented/verified) -->
+                        {% if user_practice.status in ['implemented', 'verified'] and (user_practice.latitude or user_practice.farm_area_name or user_practice.impact_observations or user_practice.resources_used) %}
+                            <div class="card border-0 shadow-sm mt-4">
+                                <div class="card-header {% if user_practice.status == 'verified' %}bg-success{% else %}bg-info{% endif %} text-white">
+                                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i> Implementation Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Location Information -->
+                                        {% if user_practice.latitude and user_practice.longitude %}
+                                            <div class="col-md-6 mb-4">
+                                                <h6><i class="fas fa-map-marker-alt me-2 text-danger"></i> Implementation Location</h6>
+                                                <div id="practiceMap" style="height: 250px;" data-lat="{{ user_practice.latitude }}" data-lng="{{ user_practice.longitude }}" data-title="{{ practice.name }}" data-area="{{ user_practice.farm_area_name or 'Implementation Area' }}"></div>
+                                                <div class="mt-2 text-muted small">
+                                                    <i class="fas fa-info-circle me-1"></i> Coordinates: {{ user_practice.latitude }}, {{ user_practice.longitude }}
+                                                    {% if user_practice.farm_area_name %}
+                                                        <br><i class="fas fa-tag me-1"></i> Area: {{ user_practice.farm_area_name }}
+                                                    {% endif %}
+                                                    {% if user_practice.area_size %}
+                                                        <br><i class="fas fa-ruler-combined me-1"></i> Size: {{ user_practice.area_size }} hectares
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Implementation Resources -->
+                                        {% if user_practice.resources_used %}
+                                            <div class="col-md-{% if user_practice.latitude and user_practice.longitude %}6{% else %}12{% endif %} mb-4">
+                                                <h6><i class="fas fa-tools me-2 text-primary"></i> Resources Used</h6>
+                                                <div class="p-3 bg-light rounded">
+                                                    {{ user_practice.resources_used|nl2br }}
+                                                </div>
+                                                
+                                                {% if user_practice.cost or user_practice.labor_hours %}
+                                                    <div class="d-flex mt-3 text-muted">
+                                                        {% if user_practice.cost %}
+                                                            <div class="me-4">
+                                                                <i class="fas fa-coins me-1"></i> Cost: {{ user_practice.cost }}
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if user_practice.labor_hours %}
+                                                            <div>
+                                                                <i class="fas fa-clock me-1"></i> Labor: {{ user_practice.labor_hours }} hours
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Impact Observations -->
+                                        {% if user_practice.impact_observations %}
+                                            <div class="col-12 mb-4">
+                                                <h6><i class="fas fa-chart-line me-2 text-success"></i> Observed Impacts</h6>
+                                                <div class="p-3 bg-light rounded">
+                                                    {{ user_practice.impact_observations|nl2br }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Carbon Impact -->
+                                        {% if user_practice.carbon_sequestered %}
+                                            <div class="col-md-6 mb-4">
+                                                <h6><i class="fas fa-leaf me-2 text-success"></i> Carbon Impact</h6>
+                                                <div class="card bg-light border-0">
+                                                    <div class="card-body text-center">
+                                                        <div class="display-6 text-success mb-2">{{ "%.2f"|format(user_practice.carbon_sequestered/1000) }} <small class="text-muted">tons CO₂e/year</small></div>
+                                                        <p class="mb-0">Equivalent to taking <strong>{{ "%.1f"|format((user_practice.carbon_sequestered/1000)*4.6) }}</strong> cars off the road</p>
+                                                        <small class="text-muted">{{ user_practice.carbon_methodology }}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Implementation Photos -->
+                                        {% if user_practice.impact_images %}
+                                            {% set images = user_practice.get_impact_images() %}
+                                            {% if images %}
+                                                <div class="col-md-{% if user_practice.carbon_sequestered %}6{% else %}12{% endif %} mb-4">
+                                                    <h6><i class="fas fa-images me-2 text-primary"></i> Implementation Photos</h6>
+                                                    <div class="row g-2">
+                                                        {% for img in images %}
+                                                            <div class="col-4">
+                                                                <a href="{{ img }}" target="_blank" class="d-block">
+                                                                    <img src="{{ img }}" alt="Implementation photo" class="img-fluid rounded">
+                                                                </a>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#implementPracticeModal">
+                                <i class="fas fa-check-circle me-2"></i> Mark as Implemented
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Implementation Status Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i> Community Implementation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-4 text-primary">{{ practice.implementation_count or '0' }}</div>
+                        <p class="mb-0 text-muted">farmers have implemented this practice</p>
+                    </div>
+                    <div class="progress mb-3" style="height: 20px;">
+                        {% set success_rate = practice.success_rate or 85 %}
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ success_rate }}%;" 
+                             aria-valuenow="{{ success_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ success_rate }}% Success Rate
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted">Based on verified implementations and farmer feedback</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Challenges Card -->
+            {% if challenges %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i> Related Challenges</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            {% for challenge in challenges %}
+                                <a href="{{ url_for('sustainability.challenge_detail', challenge_id=challenge.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ challenge.title }}</h6>
+                                        <small class="text-muted">{{ challenge.points_awarded }} pts</small>
+                                    </div>
+                                    <p class="mb-1 small text-muted">{{ challenge.description|truncate(80) }}</p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Related Practices Card -->
+            {% if related_practices %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-leaf me-2"></i> Related Practices</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            {% for related in related_practices %}
+                                <a href="{{ url_for('sustainability.practice_detail', practice_id=related.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ related.name }}</h6>
+                                        <small class="text-muted">{{ related.category|title }}</small>
+                                    </div>
+                                    <p class="mb-1 small text-muted">{{ related.description|truncate(80) }}</p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Implementation Modal -->
+<div class="modal fade" id="implementPracticeModal" tabindex="-1" aria-labelledby="implementPracticeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="implementPracticeModalLabel">
+                    <i class="fas fa-check-circle me-2"></i> Mark Practice as Implemented
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('sustainability.implement_practice', practice_id=practice.id) }}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <p>By marking this practice as implemented, you are indicating that you have:</p>
+                    <ul>
+                        <li>Fully implemented the practice on your farm</li>
+                        <li>Followed the recommended implementation steps</li>
+                        <li>Documented the implementation process</li>
+                    </ul>
+                    
+                    <h5 class="mb-3 border-bottom pb-2">Implementation Details</h5>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Implementation Notes <small class="text-muted">(required)</small></label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Describe how you implemented this practice, any challenges you faced, and your observations so far..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="implementationPhotos" class="form-label">Implementation Photos <small class="text-muted">(recommended)</small></label>
+                        <input class="form-control" type="file" id="implementationPhotos" name="photos" multiple accept="image/*">
+                        <small class="text-muted">You can upload up to 3 photos showing your implementation.</small>
+                    </div>
+                    
+                    <!-- Location Information -->
+                    <h5 class="mb-3 mt-4 border-bottom pb-2">Location Information</h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="farmAreaName" class="form-label">Farm Area Name <small class="text-muted">(required)</small></label>
+                            <input type="text" class="form-control" id="farmAreaName" name="farm_area_name" placeholder="e.g., North Field, Plot #3" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="areaSize" class="form-label">Area Size (hectares) <small class="text-muted">(required)</small></label>
+                            <input type="number" class="form-control" id="areaSize" name="area_size" step="0.01" min="0.01" placeholder="0.5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label for="latitude" class="form-label">Latitude <small class="text-muted">(optional)</small></label>
+                            <input type="number" class="form-control" id="latitude" name="latitude" step="0.000001">
+                            <small class="text-muted">Enter coordinates or click "Get Current Location"</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="longitude" class="form-label">Longitude <small class="text-muted">(optional)</small></label>
+                            <input type="number" class="form-control" id="longitude" name="longitude" step="0.000001">
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="getLocationBtn">
+                                <i class="fas fa-map-marker-alt me-1"></i> Get Current Location
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Resource Information -->
+                    <h5 class="mb-3 mt-4 border-bottom pb-2">Resource Information <small class="text-muted">(optional)</small></h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="cost" class="form-label">Implementation Cost</label>
+                            <input type="number" class="form-control" id="cost" name="cost" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="laborHours" class="form-label">Labor Hours</label>
+                            <input type="number" class="form-control" id="laborHours" name="labor_hours" step="0.5" min="0" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-2">
+                        <label for="resourcesUsed" class="form-label">Resources Used</label>
+                        <textarea class="form-control" id="resourcesUsed" name="resources_used" rows="2" placeholder="List materials, equipment, and other resources used..."></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3 mt-4">
+                        <input class="form-check-input" type="checkbox" id="verificationCheck" required>
+                        <label class="form-check-label" for="verificationCheck">
+                            I confirm that I have implemented this practice on my farm and that the information provided is accurate.
+                        </label>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        <strong>Verification:</strong> Your implementation will be reviewed by our team. Once verified, you will receive 
+                        <strong>{{ practice.points_awarded }} points</strong>.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle me-1"></i> Submit Implementation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- Leaflet CSS and JavaScript for maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Limit file uploads to 3
+        const uploadInput = document.getElementById('implementationPhotos');
+        if (uploadInput) {
+            uploadInput.addEventListener('change', function() {
+                if (this.files.length > 3) {
+                    alert('You can only upload a maximum of 3 images.');
+                    this.value = '';
+                }
+            });
+        }
+        
+        // Get Current Location functionality
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        
+        if (getLocationBtn && latitudeInput && longitudeInput) {
+            getLocationBtn.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    getLocationBtn.disabled = true;
+                    getLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Getting location...';
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        // Success callback
+                        function(position) {
+                            latitudeInput.value = position.coords.latitude.toFixed(6);
+                            longitudeInput.value = position.coords.longitude.toFixed(6);
+                            
+                            getLocationBtn.disabled = false;
+                            getLocationBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Location Retrieved';
+                            getLocationBtn.classList.remove('btn-outline-primary');
+                            getLocationBtn.classList.add('btn-success');
+                            
+                            // Reset button after 3 seconds
+                            setTimeout(function() {
+                                getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i> Get Current Location';
+                                getLocationBtn.classList.remove('btn-success');
+                                getLocationBtn.classList.add('btn-outline-primary');
+                            }, 3000);
+                        },
+                        // Error callback
+                        function(error) {
+                            let errorMessage = 'Unable to retrieve your location.';
+                            
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage = 'Location permission denied. Please enable location services in your browser.';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage = 'Location information is unavailable.';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage = 'Location request timed out.';
+                                    break;
+                            }
+                            
+                            alert(errorMessage);
+                            
+                            getLocationBtn.disabled = false;
+                            getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i> Get Current Location';
+                        },
+                        // Options
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+            });
+        }
+        
+        // Initialize map if element exists
+        const mapElement = document.getElementById('practiceMap');
+        if (mapElement) {
+            const lat = parseFloat(mapElement.dataset.lat) || 0;
+            const lng = parseFloat(mapElement.dataset.lng) || 0;
+            const title = mapElement.dataset.title || 'Implementation Location';
+            const areaName = mapElement.dataset.area || 'Implementation Area';
+            
+            // Create map
+            const map = L.map('practiceMap').setView([lat, lng], 13);
+            
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add marker for the practice location
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<strong>${title}</strong><br>${areaName}`).openPopup();
+            
+            // Add circle to represent approximate area if area_size exists
+            const areaSize = parseFloat(document.querySelector('[data-area-size]')?.dataset.areaSize);
+            if (!isNaN(areaSize) && areaSize > 0) {
+                // Convert hectares to approximate radius in meters (assuming circular area)
+                // 1 hectare = 10,000 sq meters, so radius = sqrt(area / π)
+                const areaInSqMeters = areaSize * 10000;
+                const radiusInMeters = Math.sqrt(areaInSqMeters / Math.PI);
+                
+                L.circle([lat, lng], {
+                    radius: radiusInMeters,
+                    fillColor: '#3388ff',
+                    fillOpacity: 0.2,
+                    color: '#3388ff',
+                    weight: 1
+                }).addTo(map);
+            }
+            
+            // Add area polygon if exists
+            const areaPolygon = document.querySelector('[data-area-polygon]')?.dataset.areaPolygon;
+            if (areaPolygon) {
+                try {
+                    const polygonData = JSON.parse(areaPolygon);
+                    L.geoJSON(polygonData, {
+                        style: {
+                            fillColor: '#3388ff',
+                            weight: 2,
+                            opacity: 1,
+                            color: '#3388ff',
+                            fillOpacity: 0.2
+                        }
+                    }).addTo(map);
+                } catch (e) {
+                    console.error('Error parsing area polygon:', e);
+                }
+            }
+        }
+        
+        // Initialize carbon impact visualization if element exists
+        const carbonImpactElement = document.getElementById('carbonImpactChart');
+        if (carbonImpactElement) {
+            // Carbon impact visualization could be added here in the future
+            // using libraries like Chart.js
+        }
+    });
+</script>
+{% endblock %}

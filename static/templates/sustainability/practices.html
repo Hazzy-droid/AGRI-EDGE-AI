@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+
+{% block title %}Sustainable Farming Practices | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0"><i class="fas fa-seedling text-success me-2"></i> Sustainable Farming Practices</h1>
+                <div>
+                    <a href="{{ url_for('sustainability.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted mt-2">Explore climate-smart agricultural practices to implement on your farm</p>
+        </div>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#soil" data-bs-toggle="tab">
+                                <i class="fas fa-mountain me-1"></i> Soil Health
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#water" data-bs-toggle="tab">
+                                <i class="fas fa-tint me-1"></i> Water Conservation
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#biodiversity" data-bs-toggle="tab">
+                                <i class="fas fa-leaf me-1"></i> Biodiversity
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#integrated" data-bs-toggle="tab">
+                                <i class="fas fa-sitemap me-1"></i> Integrated Systems
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#climate" data-bs-toggle="tab">
+                                <i class="fas fa-cloud-sun me-1"></i> Climate Resilience
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Practices Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="tab-content">
+                <!-- Soil Health Practices -->
+                <div class="tab-pane fade show active" id="soil">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <h3 class="h4 text-success">Soil Health Practices</h3>
+                            <p class="text-muted">Practices that improve soil structure, fertility, and microbial activity</p>
+                        </div>
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for practice in soil_practices %}
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="card-title mb-0">{{ practice.name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ practice.description|truncate(150) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary">Difficulty: {{ practice.difficulty }}/5</span>
+                                            <span class="badge bg-primary">Impact: {{ practice.impact_level }}/5</span>
+                                        </div>
+                                        {% if practice.id in user_practices %}
+                                            {% set user_practice = user_practices[practice.id] %}
+                                            <div class="alert alert-success mb-3">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% if user_practice.status == 'verified' %}
+                                                    Verified on {{ (user_practice.verification_date|string)[:10] }}
+                                                {% else %}
+                                                    Implemented on {{ (user_practice.implementation_date|string)[:10] }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-success">
+                                                <i class="fas fa-info-circle me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white text-end">
+                                        <small class="text-muted">{{ practice.points_awarded }} points upon verification</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> No soil health practices available at the moment.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Water Conservation Practices -->
+                <div class="tab-pane fade" id="water">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <h3 class="h4 text-primary">Water Conservation Practices</h3>
+                            <p class="text-muted">Practices that optimize water use efficiency and reduce water waste</p>
+                        </div>
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for practice in water_practices %}
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="card-title mb-0">{{ practice.name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ practice.description|truncate(150) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary">Difficulty: {{ practice.difficulty }}/5</span>
+                                            <span class="badge bg-primary">Impact: {{ practice.impact_level }}/5</span>
+                                        </div>
+                                        {% if practice.id in user_practices %}
+                                            {% set user_practice = user_practices[practice.id] %}
+                                            <div class="alert alert-success mb-3">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% if user_practice.status == 'verified' %}
+                                                    Verified on {{ (user_practice.verification_date|string)[:10] }}
+                                                {% else %}
+                                                    Implemented on {{ (user_practice.implementation_date|string)[:10] }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-info-circle me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white text-end">
+                                        <small class="text-muted">{{ practice.points_awarded }} points upon verification</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> No water conservation practices available at the moment.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Biodiversity Practices -->
+                <div class="tab-pane fade" id="biodiversity">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <h3 class="h4 text-warning">Biodiversity Enhancement Practices</h3>
+                            <p class="text-muted">Practices that promote biodiversity and ecosystem services on your farm</p>
+                        </div>
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for practice in biodiversity_practices %}
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="card-title mb-0">{{ practice.name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ practice.description|truncate(150) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary">Difficulty: {{ practice.difficulty }}/5</span>
+                                            <span class="badge bg-primary">Impact: {{ practice.impact_level }}/5</span>
+                                        </div>
+                                        {% if practice.id in user_practices %}
+                                            {% set user_practice = user_practices[practice.id] %}
+                                            <div class="alert alert-success mb-3">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% if user_practice.status == 'verified' %}
+                                                    Verified on {{ (user_practice.verification_date|string)[:10] }}
+                                                {% else %}
+                                                    Implemented on {{ (user_practice.implementation_date|string)[:10] }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-warning">
+                                                <i class="fas fa-info-circle me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white text-end">
+                                        <small class="text-muted">{{ practice.points_awarded }} points upon verification</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> No biodiversity enhancement practices available at the moment.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Integrated Systems Practices -->
+                <div class="tab-pane fade" id="integrated">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <h3 class="h4 text-info">Integrated Farming Systems</h3>
+                            <p class="text-muted">Practices that integrate multiple components for a synergistic farming approach</p>
+                        </div>
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for practice in integrated_practices %}
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="card-title mb-0">{{ practice.name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ practice.description|truncate(150) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary">Difficulty: {{ practice.difficulty }}/5</span>
+                                            <span class="badge bg-primary">Impact: {{ practice.impact_level }}/5</span>
+                                        </div>
+                                        {% if practice.id in user_practices %}
+                                            {% set user_practice = user_practices[practice.id] %}
+                                            <div class="alert alert-success mb-3">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% if user_practice.status == 'verified' %}
+                                                    Verified on {{ (user_practice.verification_date|string)[:10] }}
+                                                {% else %}
+                                                    Implemented on {{ (user_practice.implementation_date|string)[:10] }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-info">
+                                                <i class="fas fa-info-circle me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white text-end">
+                                        <small class="text-muted">{{ practice.points_awarded }} points upon verification</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> No integrated farming system practices available at the moment.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Climate Resilience Practices -->
+                <div class="tab-pane fade" id="climate">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <h3 class="h4 text-danger">Climate Resilience Practices</h3>
+                            <p class="text-muted">Practices that help your farm adapt to and mitigate climate change impacts</p>
+                        </div>
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for practice in climate_practices %}
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h5 class="card-title mb-0">{{ practice.name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ practice.description|truncate(150) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary">Difficulty: {{ practice.difficulty }}/5</span>
+                                            <span class="badge bg-primary">Impact: {{ practice.impact_level }}/5</span>
+                                        </div>
+                                        {% if practice.id in user_practices %}
+                                            {% set user_practice = user_practices[practice.id] %}
+                                            <div class="alert alert-success mb-3">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% if user_practice.status == 'verified' %}
+                                                    Verified on {{ (user_practice.verification_date|string)[:10] }}
+                                                {% else %}
+                                                    Implemented on {{ (user_practice.implementation_date|string)[:10] }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-danger">
+                                                <i class="fas fa-info-circle me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white text-end">
+                                        <small class="text-muted">{{ practice.points_awarded }} points upon verification</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> No climate resilience practices available at the moment.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Activate tab based on URL hash
+        const hash = window.location.hash || '#soil';
+        const tab = document.querySelector(`a[href="${hash}"]`);
+        if (tab) {
+            new bootstrap.Tab(tab).show();
+        }
+
+        // Update URL hash when tab changes
+        const tabs = document.querySelectorAll('a[data-bs-toggle="tab"]');
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (event) {
+                window.location.hash = event.target.getAttribute('href');
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Climate-Smart Agriculture Platform | Log In{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0 position-relative">
+    <!-- Full-width hero banner -->
+    <div class="hero-banner position-relative">
+        <div class="overlay-gradient position-absolute w-100 h-100" style="background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8));"></div>
+        <img src="https://images.unsplash.com/photo-1629389861081-43cc4f172b0c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="w-100" alt="African agriculture landscape" style="height: 300px; object-fit: cover;">
+        <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
+            <h1 class="display-4 fw-bold mb-0">Climate-Smart Agriculture</h1>
+            <p class="lead">Empowering Africa's farmers with Edge AI technology</p>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Interactive Image Carousel Column -->
+        <div class="col-lg-7 mb-4">
+            <div id="loginCarousel" class="carousel slide shadow rounded" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="0" class="active"></button>
+                    <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="2"></button>
+                    <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="3"></button>
+                </div>
+                <div class="carousel-inner rounded">
+                    <div class="carousel-item active">
+                        <img src="https://images.unsplash.com/photo-1620200423787-1f854ea4a005?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="d-block w-100" alt="Aerial view of African farm" style="max-height: 500px; object-fit: cover;">
+                        <div class="carousel-caption">
+                            <h3>Climate-Smart Agriculture</h3>
+                            <p>Harnessing technology for sustainable farming in Africa</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1508900589183-9d8e4b9b5044?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="d-block w-100" alt="Satellite view of agricultural land" style="max-height: 500px; object-fit: cover;">
+                        <div class="carousel-caption">
+                            <h3>Satellite Imagery</h3>
+                            <p>Monitor crop health with advanced satellite technology</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1536445841725-020710a6ab45?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="d-block w-100" alt="Soil sensor being installed" style="max-height: 500px; object-fit: cover;">
+                        <div class="carousel-caption">
+                            <h3>Soil Monitoring</h3>
+                            <p>Real-time soil data for optimal decision making</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="d-block w-100" alt="Community of farmers" style="max-height: 500px; object-fit: cover;">
+                        <div class="carousel-caption">
+                            <h3>Community & Marketplace</h3>
+                            <p>Connect with other farmers and access agricultural markets</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#loginCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#loginCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+            
+            <!-- Welcome Video Component -->
+            {% include 'components/welcome_video.html' %}
+            
+            <!-- Developer Attribution Card -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="text-center mb-3"><i class="fas fa-award text-warning me-2"></i>Developed By Innovative High School Students</h5>
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="text-center mx-3">
+                            <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center mx-auto mb-2" style="width: 70px; height: 70px;">
+                                <i class="fas fa-user-graduate fa-2x"></i>
+                            </div>
+                            <h6 class="mb-1">Elphas Kibet Korir</h6>
+                            <p class="text-muted small mb-0">Lead Developer & AI Specialist</p>
+                            <span class="badge bg-info mt-1">Machine Learning</span>
+                            <span class="badge bg-primary mt-1">Satellite Data</span>
+                        </div>
+                        <div class="text-center mx-3">
+                            <div class="rounded-circle bg-success text-white d-flex justify-content-center align-items-center mx-auto mb-2" style="width: 70px; height: 70px;">
+                                <i class="fas fa-user-graduate fa-2x"></i>
+                            </div>
+                            <h6 class="mb-1">Isaac Lee Kamau</h6>
+                            <p class="text-muted small mb-0">IoT Engineer & Systems Architect</p>
+                            <span class="badge bg-warning text-dark mt-1">IoT Systems</span>
+                            <span class="badge bg-success mt-1">Climate Science</span>
+                        </div>
+                    </div>
+                    <div class="alert alert-primary py-2 mb-3 text-center">
+                        <i class="fas fa-school me-2"></i> <strong>Moi Forces Academy Nairobi</strong> - Winners of National Science Innovation Award
+                    </div>
+                    <p class="text-center text-muted mb-2">These talented high school students developed this platform to address food security challenges in Africa through innovative climate-smart agriculture technology.</p>
+                    <p class="text-center text-muted mb-3">Their project combines satellite imagery, AI-powered analysis, and IoT soil sensors to help farmers adapt to changing climate conditions and improve crop yields.</p>
+                    <div class="text-center">
+                        <span class="badge bg-primary">Edge AI</span>
+                        <span class="badge bg-success">Climate-Smart</span>
+                        <span class="badge bg-info">Satellite Imagery</span>
+                        <span class="badge bg-warning text-dark">IoT Sensors</span>
+                        <span class="badge bg-secondary">Weather Forecasting</span>
+                        <span class="badge bg-danger">Food Security</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Login Form Column -->
+        <div class="col-lg-5">
+            <div class="card shadow border-0">
+                <div class="card-header bg-gradient-primary text-white" style="background: linear-gradient(45deg, #1565C0, #6A1B9A);">
+                    <h3 class="mb-0 d-flex align-items-center">
+                        <span class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="fas fa-user fa-lg"></i>
+                        </span>
+                        <span>Welcome Back</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Access your climate-smart farming account to view insights, connect with other farmers, and manage your marketplace listings.</p>
+                    
+                    <!-- Login Form using Flask-WTF -->
+                    <form action="{{ url_for('auth.login') }}" method="post">
+                        {{ form.csrf_token }}
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} border-0 shadow-sm" role="alert">
+                                        <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'info' %}fa-info-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                </span>
+                                {{ form.email(class_="form-control border-0 shadow-none ps-2", id="email", placeholder="Enter your email or username") }}
+                            </div>
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="fas fa-lock text-primary"></i>
+                                </span>
+                                {{ form.password(class_="form-control border-0 shadow-none ps-2", id="password", placeholder="Enter your password") }}
+                                <button class="btn btn-outline-secondary border-0" type="button" id="togglePassword">
+                                    <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                            {% if form.password.errors %}
+                                {% for error in form.password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="form-check">
+                                {{ form.remember(class_="form-check-input", id="remember") }}
+                                <label class="form-check-label" for="remember">
+                                    <i class="fas fa-check-square text-primary me-1"></i>Remember me
+                                </label>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none fw-semibold">
+                                    <i class="fas fa-key me-1"></i>Forgot password?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm fw-bold">
+                            <i class="fas fa-sign-in-alt me-2"></i> Log In to Your Account
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <div class="position-relative my-3">
+                            <hr>
+                            <span class="position-absolute top-50 start-50 translate-middle px-3 bg-white text-muted">or</span>
+                        </div>
+                        <p class="mb-2">Don't have an account?</p>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-user-plus me-2"></i> Create New Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Add password toggle functionality
+                    const togglePassword = document.getElementById('togglePassword');
+                    const passwordInput = document.getElementById('password');
+                    const toggleIcon = document.getElementById('togglePasswordIcon');
+                    
+                    if (togglePassword && passwordInput && toggleIcon) {
+                        togglePassword.addEventListener('click', function() {
+                            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                            passwordInput.setAttribute('type', type);
+                            
+                            // Toggle icon
+                            toggleIcon.classList.toggle('fa-eye');
+                            toggleIcon.classList.toggle('fa-eye-slash');
+                        });
+                    }
+                    
+                    // Add input focus effects
+                    const formInputs = document.querySelectorAll('.form-control');
+                    formInputs.forEach(input => {
+                        input.addEventListener('focus', function() {
+                            this.parentElement.classList.add('border-primary');
+                        });
+                        
+                        input.addEventListener('blur', function() {
+                            this.parentElement.classList.remove('border-primary');
+                        });
+                    });
+                });
+            </script>
+            
+            <!-- Additional Information Card -->
+            <div class="card mt-4 mb-4">
+                <div class="card-body">
+                    <h5><i class="fas fa-shield-alt text-success me-2"></i>Secure Login</h5>
+                    <p class="text-muted mb-0">Your information is protected with industry-standard encryption. We will never share your personal data with third parties without your consent.</p>
+                </div>
+            </div>
+            
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <h5 class="mb-3">Features Highlight</h5>
+                    <div class="row text-center g-3">
+                        <div class="col-6">
+                            <div class="feature-icon rounded-circle bg-primary mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="fas fa-satellite"></i>
+                            </div>
+                            <p class="mb-0 small">Satellite Imagery</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="feature-icon rounded-circle bg-success mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                            <p class="mb-0 small">Weather Forecasting</p>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <div class="feature-icon rounded-circle bg-info mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <p class="mb-0 small">Soil Monitoring</p>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <div class="feature-icon rounded-circle bg-warning mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <p class="mb-0 small">Community Hub</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Enable carousel autoplay
+    document.addEventListener('DOMContentLoaded', function() {
+        var myCarousel = document.getElementById('loginCarousel');
+        var carousel = new bootstrap.Carousel(myCarousel, {
+            interval: 5000,
+            wrap: true
+        });
+        
+        // Set the welcome video as the default for the help button
+        if (typeof setPageDefaultVideo === "function" && typeof VIDEO_TUTORIALS !== "undefined") {
+            const welcomeVideo = VIDEO_TUTORIALS.welcome;
+            setPageDefaultVideo(welcomeVideo.path, welcomeVideo.title, welcomeVideo.description);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

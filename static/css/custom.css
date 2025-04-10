@@ -1,0 +1,368 @@
+/* Custom CSS for Climate-Smart Agriculture Platform */
+
+/* Main layout */
+body {
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.main-content {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    transition: all 0.3s;
+}
+
+/* Sidebar styles */
+.sidebar .nav-link {
+    border-radius: 0;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--bs-primary);
+}
+
+.sidebar hr {
+    margin: 1rem 0;
+    opacity: 0.25;
+}
+
+/* Cards and content */
+.card {
+    margin-bottom: 1.5rem;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Weather display */
+.weather-overview .temperature {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0;
+}
+
+.weather-overview .weather-description {
+    text-transform: capitalize;
+}
+
+.weather-details {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+}
+
+.daily-forecast-item {
+    transition: transform 0.2s;
+}
+
+.daily-forecast-item:hover {
+    transform: translateY(-5px);
+}
+
+.max-temp {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.min-temp {
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* NDVI and crop health styling */
+.ndvi-gradient {
+    height: 10px;
+    background: linear-gradient(to right, #d73027, #fc8d59, #fee08b, #d9ef8b, #91cf60, #1a9850);
+    border-radius: 5px;
+}
+
+.crop-health-gauge {
+    position: relative;
+}
+
+.status-label {
+    margin-top: 0.5rem;
+}
+
+.status-description {
+    color: var(--bs-secondary-color);
+    font-size: 0.9rem;
+}
+
+/* Soil moisture styling */
+.moisture-level .progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.moisture-level .progress-bar {
+    transition: width 1s;
+}
+
+/* Recommendation styling */
+.recommendation-priority {
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Farm map */
+#farmMap, #weatherMap, #satelliteMap {
+    border-radius: 0.25rem;
+}
+
+/* Miscellaneous */
+.connection-status {
+    cursor: pointer;
+}
+
+.language-selector {
+    width: 120px;
+}
+
+.weather-preview {
+    align-items: center;
+}
+
+.footer {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Welcome page styling */
+.welcome-section {
+    padding: 2rem 0;
+}
+
+.platform-features .list-group-item {
+    padding: 0.75rem 1.25rem;
+}
+
+/* Offline alert */
+.offline-alert {
+    margin-bottom: 1rem;
+}
+
+/* Loading indicator */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Learning Module Styling */
+.learning-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+}
+
+.learning-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ribbon {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    position: absolute;
+    z-index: 1;
+}
+
+.ribbon::before,
+.ribbon::after {
+    position: absolute;
+    z-index: -1;
+    content: '';
+    display: block;
+}
+
+.ribbon span {
+    position: absolute;
+    display: block;
+    width: 225px;
+    padding: 5px 0;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-shadow: 0 1px 1px rgba(0,0,0,.2);
+    text-align: center;
+}
+
+.ribbon-top-right {
+    top: -10px;
+    right: -10px;
+}
+
+.ribbon-top-right::before,
+.ribbon-top-right::after {
+    border-top-color: transparent;
+    border-right-color: transparent;
+}
+
+.ribbon-top-right::before {
+    top: 0;
+    left: 0;
+}
+
+.ribbon-top-right::after {
+    bottom: 0;
+    right: 0;
+}
+
+.ribbon-top-right span {
+    left: -25px;
+    top: 30px;
+    transform: rotate(45deg);
+}
+
+.achievement-badge {
+    transition: all 0.3s ease;
+}
+
+.achievement-badge:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+}
+
+.progress-banner, .module-header, .lesson-header {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.progress-banner::before, .module-header::before, .lesson-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://images.unsplash.com/photo-1520052203542-d3095f1b6cf0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80');
+    background-size: cover;
+    background-position: center;
+    z-index: -2;
+}
+
+.progress-banner::after, .module-header::after, .lesson-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    opacity: 0.9;
+    z-index: -1;
+}
+
+/* Circular progress chart */
+.circular-chart {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 2.8;
+}
+
+.circle {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
+
+.percentage {
+    fill: #fff;
+    font-size: 0.6em;
+    text-anchor: middle;
+    font-weight: bold;
+}
+
+/* Lesson content styling */
+.lesson-content {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.lesson-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #0d6efd;
+}
+
+.lesson-content h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+.lesson-content table {
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+/* Quiz styling */
+.question-container {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.question-container:last-child {
+    border-bottom: none;
+}

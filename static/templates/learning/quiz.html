@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quiz.title }} - Learning Quiz{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Quiz header -->
+    <div class="row mb-4">
+        <div class="col-md-10 mx-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('learning.learning_dashboard') }}">Learning Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('learning.view_module', module_id=module.id) }}">{{ module.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ quiz.title }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-5 mb-0">{{ quiz.title }}</h1>
+                <span class="badge {% if is_completed %}bg-success{% else %}bg-secondary{% endif %} p-2">
+                    {% if is_completed %}
+                    <i class="fas fa-check-circle"></i> Passed
+                    {% else %}
+                    Not Completed
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+                <span class="text-muted">
+                    From <strong>{{ module.title }}</strong>
+                </span>
+                <span class="badge bg-info">
+                    <i class="fas fa-star"></i> {{ quiz.points_awarded }} points
+                </span>
+            </div>
+            
+            <p class="lead">{{ quiz.description }}</p>
+            
+            <div class="d-flex justify-content-between align-items-center bg-dark p-3 rounded mb-4">
+                <div>
+                    <strong>Passing score:</strong> {{ quiz.passing_score }}%
+                </div>
+                
+                {% if quiz.time_limit %}
+                <div>
+                    <i class="fas fa-clock"></i> <strong>Time limit:</strong> {{ quiz.time_limit }} min
+                </div>
+                {% endif %}
+                
+                <div>
+                    <strong>Questions:</strong> {{ questions|length }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Previous attempts, if any -->
+    {% if attempts %}
+    <div class="row mb-4">
+        <div class="col-md-10 mx-auto">
+            <div class="card border-0 bg-dark">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Previous Attempts</h5>
+                    <span class="badge {% if is_completed %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if is_completed %}Passed{% else %}Not Passed{% endif %}
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-dark mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Attempt #</th>
+                                    <th>Date</th>
+                                    <th>Score</th>
+                                    <th>Result</th>
+                                    <th>Time Spent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in attempts %}
+                                <tr>
+                                    <td>{{ attempt.attempt_number }}</td>
+                                    <td>{{ attempt.completed_at.strftime('%b %d, %Y, %H:%M') }}</td>
+                                    <td>{{ attempt.score }}%</td>
+                                    <td>
+                                        <span class="badge {% if attempt.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if attempt.passed %}Passed{% else %}Failed{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if attempt.time_spent %}
+                                        {{ (attempt.time_spent / 60)|round }} min {{ attempt.time_spent % 60 }} sec
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Quiz navigation -->
+    <div class="row mb-3">
+        <div class="col-md-10 mx-auto">
+            <div class="card border-0 bg-dark">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between">
+                        {% if prev_item %}
+                        <a href="{% if prev_item.type == 'lesson' %}{{ url_for('learning.view_lesson', lesson_id=prev_item.id) }}{% else %}{{ url_for('learning.view_quiz', quiz_id=prev_item.id) }}{% endif %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-arrow-left"></i> Previous {{ prev_item.type|capitalize }}
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('learning.view_module', module_id=module.id) }}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-th-list"></i> Module Overview
+                        </a>
+                        {% endif %}
+                        
+                        {% if is_completed and next_item %}
+                        <a href="{% if next_item.type == 'lesson' %}{{ url_for('learning.view_lesson', lesson_id=next_item.id) }}{% else %}{{ url_for('learning.view_quiz', quiz_id=next_item.id) }}{% endif %}" class="btn btn-sm btn-outline-light">
+                            Next {{ next_item.type|capitalize }} <i class="fas fa-arrow-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quiz content -->
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            {% if not current_user.is_authenticated %}
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle"></i> You need to <a href="{{ url_for('auth.login', next=request.path) }}" class="alert-link">log in</a> to submit quiz answers and track your progress.
+            </div>
+            {% endif %}
+            
+            <div class="card border-0 bg-dark">
+                <div class="card-body">
+                    <form id="quiz-form" action="{{ url_for('learning.submit_quiz', quiz_id=quiz.id) }}" method="post">
+                        {% if next_item %}
+                        <input type="hidden" name="next_item_type" value="{{ next_item.type }}">
+                        <input type="hidden" name="next_item_id" value="{{ next_item.id }}">
+                        {% endif %}
+                        
+                        <!-- Timer if time limited -->
+                        {% if quiz.time_limit and not is_completed %}
+                        <div class="alert alert-info d-flex justify-content-between align-items-center" id="quiz-timer">
+                            <div>
+                                <i class="fas fa-clock"></i> Time Remaining: 
+                                <span id="timer-display">{{ quiz.time_limit }}:00</span>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="pause-timer">
+                                    <i class="fas fa-pause"></i> Pause
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Questions -->
+                        {% for q in questions %}
+                        <div class="mb-4 p-3 bg-dark rounded">
+                            <h5 class="card-title">Question {{ loop.index }}: {{ q.question.question_text }}</h5>
+                            
+                            <!-- Multiple choice question -->
+                            {% if q.question.question_type == 'multiple_choice' %}
+                            <div class="mt-3">
+                                {% for choice in q.choices %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="question_{{ q.question.id }}" 
+                                           id="q{{ q.question.id }}_choice{{ choice.id }}" value="{{ choice.id }}"
+                                           {% if is_completed %}disabled{% endif %} required>
+                                    <label class="form-check-label" for="q{{ q.question.id }}_choice{{ choice.id }}">
+                                        {{ choice.choice_text }}
+                                    </label>
+                                    {% if is_completed %}
+                                    {% if choice.is_correct %}
+                                    <span class="text-success ms-2"><i class="fas fa-check-circle"></i> Correct Answer</span>
+                                    {% endif %}
+                                    {% if choice.explanation %}
+                                    <div class="text-muted small mt-1">{{ choice.explanation }}</div>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- True/False question -->
+                            {% elif q.question.question_type == 'true_false' %}
+                            <div class="mt-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="question_{{ q.question.id }}" 
+                                           id="q{{ q.question.id }}_true" value="true"
+                                           {% if is_completed %}disabled{% endif %} required>
+                                    <label class="form-check-label" for="q{{ q.question.id }}_true">
+                                        True
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="question_{{ q.question.id }}" 
+                                           id="q{{ q.question.id }}_false" value="false"
+                                           {% if is_completed %}disabled{% endif %} required>
+                                    <label class="form-check-label" for="q{{ q.question.id }}_false">
+                                        False
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Short answer question -->
+                            {% elif q.question.question_type == 'short_answer' %}
+                            <div class="mt-3">
+                                <input type="text" class="form-control bg-dark text-light" name="question_{{ q.question.id }}" 
+                                       id="q{{ q.question.id }}_answer" placeholder="Your answer" 
+                                       {% if is_completed %}disabled{% endif %} required>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Submit button -->
+                        {% if not is_completed %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('learning.view_module', module_id=module.id) }}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left"></i> Back to Module
+                            </a>
+                            {% if current_user.is_authenticated %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Submit Quiz
+                            </button>
+                            {% else %}
+                            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> Log in to Submit
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('learning.view_module', module_id=module.id) }}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left"></i> Back to Module
+                            </a>
+                            {% if next_item %}
+                            <a href="{% if next_item.type == 'lesson' %}{{ url_for('learning.view_lesson', lesson_id=next_item.id) }}{% else %}{{ url_for('learning.view_quiz', quiz_id=next_item.id) }}{% endif %}" class="btn btn-primary">
+                                Next {{ next_item.type|capitalize }} <i class="fas fa-arrow-right"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if quiz.time_limit and not is_completed %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize timer
+        let timeLimit = {{ quiz.time_limit }} * 60; // Convert to seconds
+        let timerDisplay = document.getElementById('timer-display');
+        let pauseButton = document.getElementById('pause-timer');
+        let quizForm = document.getElementById('quiz-form');
+        let timerInterval;
+        let isPaused = false;
+        
+        // Update timer display
+        function updateTimerDisplay() {
+            let minutes = Math.floor(timeLimit / 60);
+            let seconds = timeLimit % 60;
+            timerDisplay.textContent = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+            
+            if (timeLimit <= 60) {
+                timerDisplay.classList.add('text-danger');
+            }
+        }
+        
+        // Start the timer
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                if (!isPaused) {
+                    timeLimit--;
+                    updateTimerDisplay();
+                    
+                    if (timeLimit <= 0) {
+                        clearInterval(timerInterval);
+                        // Auto submit the form when time is up
+                        quizForm.submit();
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Toggle pause/resume
+        pauseButton.addEventListener('click', function() {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                pauseButton.innerHTML = '<i class="fas fa-play"></i> Resume';
+                pauseButton.classList.remove('btn-outline-primary');
+                pauseButton.classList.add('btn-outline-success');
+            } else {
+                pauseButton.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                pauseButton.classList.remove('btn-outline-success');
+                pauseButton.classList.add('btn-outline-primary');
+            }
+        });
+        
+        // Add confirmation before leaving page
+        window.addEventListener('beforeunload', function(e) {
+            if (!quizForm.submitted) {
+                e.preventDefault();
+                e.returnValue = 'You have an unsubmitted quiz. Are you sure you want to leave?';
+            }
+        });
+        
+        // Mark form as submitted on submit
+        quizForm.addEventListener('submit', function() {
+            quizForm.submitted = true;
+        });
+        
+        // Initialize and start the timer
+        updateTimerDisplay();
+        startTimer();
+    });
+</script>
+{% endif %}
+{% endblock %}

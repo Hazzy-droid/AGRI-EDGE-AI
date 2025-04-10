@@ -1,0 +1,680 @@
+{% extends "base.html" %}
+
+{% block title %}Community | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-users me-2"></i>
+                        <span class="translate" data-key="farmer_community">Farmer Community</span>
+                    </h2>
+                    <p class="card-text translate" data-key="community_desc">Connect with other farmers, share knowledge, and discuss climate-smart agricultural techniques</p>
+                    
+                    <!-- Hero Banner with Background Image -->
+                    <div class="community-hero mb-4 rounded position-relative" style="background: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80') center/cover no-repeat; height: 300px;">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 rounded" style="background-color: rgba(0,0,0,0.5)"></div>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center text-white w-75">
+                            <h3 class="translate" data-key="community_banner_title">Share Your Climate-Smart Farming Experience</h3>
+                            <p class="translate" data-key="community_banner_subtitle">Learn from fellow farmers and agricultural experts across Africa</p>
+                            <a href="#create-post" class="btn btn-primary mt-2 translate" data-key="create_post" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                <i class="fas fa-plus-circle me-2"></i>Create Post
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Community Navigation and Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <ul class="nav nav-pills community-filters">
+                                {% for key, name in categories.items() %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if selected_category == key %}active{% endif %}" href="?category={{ key }}&sort_by={{ sort_by }}">
+                                        {{ name }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <select class="form-select" id="sortBy" onchange="window.location.href = '?category={{ selected_category }}&sort_by=' + this.value">
+                                    <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                                    <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                                    <option value="comments" {% if sort_by == 'comments' %}selected{% endif %}>Most Comments</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Community Content -->
+    <div class="row">
+        <!-- Posts Feed -->
+        <div class="col-md-8">
+            <!-- Create Post Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" alt="{{ user.username }}" class="rounded-circle" width="50" height="50">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="form-control post-text-area" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                <span class="text-muted translate" data-key="share_your_thoughts">Share your insights or questions with the community...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-image me-2"></i>
+                            <span class="translate" data-key="add_photo">Add Photo</span>
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-video me-2"></i>
+                            <span class="translate" data-key="add_video">Add Video</span>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <span class="translate" data-key="add_location">Add Location</span>
+                        </button>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            <span class="translate" data-key="post">Post</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Posts List -->
+            {% if posts %}
+                {% for post in posts %}
+                <div class="card mb-4 post-card">
+                    <div class="card-header bg-transparent">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                <img src="https://ui-avatars.com/api/?name={{ post.user.username }}&background=random" alt="{{ post.user.username }}" class="rounded-circle" width="50" height="50">
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ post.user.username }}</h6>
+                                <div class="small text-muted">
+                                    {{ post.user.farm_name }} • {{ post.location }} • 
+                                    {% if (now - post.created_at).days == 0 %}
+                                        Today
+                                    {% elif (now - post.created_at).days == 1 %}
+                                        Yesterday
+                                    {% else %}
+                                        {{ post.created_at.strftime('%b %d, %Y') }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ms-auto">
+                                <!-- Category Badge -->
+                                {% if post.category == 'knowledge_sharing' %}
+                                <span class="badge bg-info">Knowledge Sharing</span>
+                                {% elif post.category == 'question' %}
+                                <span class="badge bg-primary">Question</span>
+                                {% elif post.category == 'market' %}
+                                <span class="badge bg-success">Marketplace</span>
+                                {% elif post.category == 'event' %}
+                                <span class="badge bg-warning">Event</span>
+                                {% elif post.category == 'success_story' %}
+                                <span class="badge bg-light text-dark">Success Story</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if post.image_url %}
+                    <img src="{{ post.image_url }}" class="card-img-top" alt="{{ post.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text">{{ post.content }}</p>
+                        
+                        <!-- Post Actions -->
+                        <div class="post-actions d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary me-2 like-button" data-post-id="{{ post.id }}">
+                                    <i class="far fa-thumbs-up"></i> 
+                                    <span class="like-count">{{ post.likes }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary me-2 comment-button" data-post-id="{{ post.id }}">
+                                    <i class="far fa-comment"></i> 
+                                    <span class="comment-count">{{ post.comment_count }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success share-button" data-post-id="{{ post.id }}">
+                                    <i class="far fa-share-square"></i> Share
+                                </button>
+                            </div>
+                            <button class="btn btn-sm btn-link text-muted save-button" data-post-id="{{ post.id }}">
+                                <i class="far fa-bookmark"></i> Save
+                            </button>
+                        </div>
+                        
+                        <!-- Comments Section (collapsed by default) -->
+                        <div class="comments-section mt-3 d-none" id="comments-{{ post.id }}">
+                            <hr>
+                            <h6 class="mb-3">Comments ({{ post.comment_count }})</h6>
+                            
+                            <!-- Comment Form -->
+                            <div class="d-flex mb-3">
+                                <div class="avatar me-2">
+                                    <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" alt="{{ user.username }}" class="rounded-circle" width="40" height="40">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" placeholder="Add a comment..." id="commentText-{{ post.id }}"></textarea>
+                                        <label for="commentText-{{ post.id }}">Add a comment...</label>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <button class="btn btn-primary btn-sm submit-comment" data-post-id="{{ post.id }}">
+                                            <i class="fas fa-paper-plane me-2"></i> Comment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sample Comments -->
+                            <div class="comment">
+                                <div class="d-flex mb-2">
+                                    <div class="avatar me-2">
+                                        <img src="https://ui-avatars.com/api/?name=FarmerTech&background=random" alt="FarmerTech" class="rounded-circle" width="40" height="40">
+                                    </div>
+                                    <div>
+                                        <div class="comment-bubble p-2 rounded bg-light">
+                                            <h6 class="mb-1">FarmerTech</h6>
+                                            <p class="mb-1">This is great information! I've been having similar results with my crops using the irrigation recommendations.</p>
+                                            <div class="small text-muted">2 days ago</div>
+                                        </div>
+                                        <div class="comment-actions mt-1">
+                                            <button class="btn btn-sm btn-link p-0 text-muted">Like</button> •
+                                            <button class="btn btn-sm btn-link p-0 text-muted">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="comment">
+                                <div class="d-flex mb-2">
+                                    <div class="avatar me-2">
+                                        <img src="https://ui-avatars.com/api/?name=SoilExpert&background=random" alt="SoilExpert" class="rounded-circle" width="40" height="40">
+                                    </div>
+                                    <div>
+                                        <div class="comment-bubble p-2 rounded bg-light">
+                                            <h6 class="mb-1">SoilExpert</h6>
+                                            <p class="mb-1">Have you tried adjusting the sensor placement based on the soil type? I found that it makes a big difference in the accuracy of the moisture readings.</p>
+                                            <div class="small text-muted">1 day ago</div>
+                                        </div>
+                                        <div class="comment-actions mt-1">
+                                            <button class="btn btn-sm btn-link p-0 text-muted">Like</button> •
+                                            <button class="btn btn-sm btn-link p-0 text-muted">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- View More Comments Button -->
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-secondary btn-sm view-more-comments" data-post-id="{{ post.id }}">
+                                    View More Comments
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Load More Posts Button -->
+                <div class="text-center mb-4">
+                    <button class="btn btn-outline-primary load-more-button">
+                        <i class="fas fa-sync me-2"></i> Load More Posts
+                    </button>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="no_posts">No posts available for the selected category</span>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- User Profile Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random&size=150" alt="{{ user.username }}" class="rounded-circle mb-3" width="100">
+                        <h5>{{ user.username }}</h5>
+                        <p class="text-muted mb-2">{{ user.farm_name }}</p>
+                        <div class="small text-muted mb-3">
+                            <i class="fas fa-user-friends me-1"></i> 128 Connections
+                        </div>
+                        <a href="#profile" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-user me-1"></i> View Profile
+                        </a>
+                    </div>
+                    
+                    <div class="profile-stats d-flex justify-content-between text-center">
+                        <div class="profile-stat">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label small text-muted">Posts</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-value">48</div>
+                            <div class="stat-label small text-muted">Following</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-value">80</div>
+                            <div class="stat-label small text-muted">Followers</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending Topics Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-fire me-2 text-danger"></i>
+                        <span class="translate" data-key="trending_topics">Trending Topics</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="#" class="text-decoration-none">#DroughtResistantCrops</a>
+                            <span class="badge bg-primary rounded-pill">24</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="#" class="text-decoration-none">#SoilMoistureSensors</a>
+                            <span class="badge bg-primary rounded-pill">18</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="#" class="text-decoration-none">#ClimateSmartFarming</a>
+                            <span class="badge bg-primary rounded-pill">15</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="#" class="text-decoration-none">#WaterConservation</a>
+                            <span class="badge bg-primary rounded-pill">12</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="#" class="text-decoration-none">#OrganicFarming</a>
+                            <span class="badge bg-primary rounded-pill">9</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Upcoming Events Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2 text-warning"></i>
+                        <span class="translate" data-key="upcoming_events">Upcoming Events</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <div class="event-date text-center me-3 border rounded p-2">
+                                    <div class="event-month small text-uppercase text-muted">Apr</div>
+                                    <div class="event-day fw-bold">15</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Climate-Smart Agriculture Workshop</h6>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i> Nairobi, Kenya
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-clock me-1"></i> 9:00 AM - 4:00 PM
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <div class="event-date text-center me-3 border rounded p-2">
+                                    <div class="event-month small text-uppercase text-muted">Apr</div>
+                                    <div class="event-day fw-bold">22</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Online Webinar: Soil Health Management</h6>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-globe me-1"></i> Virtual Event
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-clock me-1"></i> 2:00 PM - 3:30 PM
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <div class="event-date text-center me-3 border rounded p-2">
+                                    <div class="event-month small text-uppercase text-muted">May</div>
+                                    <div class="event-day fw-bold">5</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Agricultural Technology Showcase</h6>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i> Mombasa, Kenya
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-clock me-1"></i> 10:00 AM - 5:00 PM
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All Events</a>
+                </div>
+            </div>
+            
+            <!-- Suggested Connections Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-friends me-2 text-info"></i>
+                        <span class="translate" data-key="suggested_connections">Suggested Connections</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name=Maria+Farmer&background=random" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-1">Maria Farmer</h6>
+                                    <div class="small text-muted">Rice Farming Expert • Mwea, Kenya</div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary ms-auto">
+                                    <i class="fas fa-user-plus"></i> Connect
+                                </button>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name=Joseph+Climate&background=random" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-1">Joseph Climate</h6>
+                                    <div class="small text-muted">Agricultural Meteorologist • Nairobi, Kenya</div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary ms-auto">
+                                    <i class="fas fa-user-plus"></i> Connect
+                                </button>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name=Amina+Tractor&background=random" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-1">Amina Tractor</h6>
+                                    <div class="small text-muted">Farm Equipment Specialist • Kisumu, Kenya</div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary ms-auto">
+                                    <i class="fas fa-user-plus"></i> Connect
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-sm btn-outline-primary">View More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    <span class="translate" data-key="create_post">Create Post</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createPostForm">
+                    <div class="mb-3">
+                        <label for="postTitle" class="form-label translate" data-key="post_title">Post Title</label>
+                        <input type="text" class="form-control" id="postTitle" placeholder="Enter a title for your post">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postContent" class="form-label translate" data-key="post_content">Post Content</label>
+                        <textarea class="form-control" id="postContent" rows="5" placeholder="Share your thoughts, knowledge, or questions with the community..."></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="postCategory" class="form-label translate" data-key="post_category">Category</label>
+                            <select class="form-select" id="postCategory">
+                                <option value="knowledge_sharing">Knowledge Sharing</option>
+                                <option value="question">Question</option>
+                                <option value="market">Marketplace</option>
+                                <option value="event">Event</option>
+                                <option value="success_story">Success Story</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="postLocation" class="form-label translate" data-key="post_location">Location</label>
+                            <input type="text" class="form-control" id="postLocation" placeholder="Enter your location">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postTags" class="form-label translate" data-key="post_tags">Tags</label>
+                        <input type="text" class="form-control" id="postTags" placeholder="Add tags separated by commas (e.g., irrigation, soil, weather)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postImage" class="form-label translate" data-key="post_image">Image (Optional)</label>
+                        <input type="file" class="form-control" id="postImage">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postVisibility" class="form-label translate" data-key="post_visibility">Visibility</label>
+                        <select class="form-select" id="postVisibility">
+                            <option value="public">Public - Anyone can see this post</option>
+                            <option value="region">Regional - Only farmers in your region can see this post</option>
+                            <option value="connections">Connections - Only your connections can see this post</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    <span class="translate" data-key="cancel">Cancel</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="submitPost">
+                    <i class="fas fa-paper-plane me-2"></i>
+                    <span class="translate" data-key="publish_post">Publish Post</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .post-text-area {
+        cursor: pointer;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .avatar img {
+        object-fit: cover;
+    }
+    
+    .comment-bubble {
+        border-radius: 0.8rem;
+    }
+    
+    .post-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .community-hero {
+        overflow: hidden;
+    }
+    
+    .profile-stat {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+    
+    .profile-stat:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .event-date {
+        min-width: 50px;
+    }
+    
+    .community-filters .nav-link {
+        color: var(--bs-dark);
+    }
+    
+    .community-filters .nav-link.active {
+        background-color: var(--bs-primary);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Comment button functionality
+    const commentButtons = document.querySelectorAll('.comment-button');
+    commentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            if (commentsSection.classList.contains('d-none')) {
+                commentsSection.classList.remove('d-none');
+                this.classList.add('active');
+            } else {
+                commentsSection.classList.add('d-none');
+                this.classList.remove('active');
+            }
+        });
+    });
+    
+    // Like button functionality
+    const likeButtons = document.querySelectorAll('.like-button');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const likeCount = this.querySelector('.like-count');
+            const currentLikes = parseInt(likeCount.textContent);
+            
+            if (this.classList.contains('liked')) {
+                likeCount.textContent = currentLikes - 1;
+                this.classList.remove('liked');
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-outline-primary');
+                this.querySelector('i').classList.remove('fas');
+                this.querySelector('i').classList.add('far');
+            } else {
+                likeCount.textContent = currentLikes + 1;
+                this.classList.add('liked');
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                this.querySelector('i').classList.remove('far');
+                this.querySelector('i').classList.add('fas');
+            }
+        });
+    });
+    
+    // Share button functionality
+    const shareButtons = document.querySelectorAll('.share-button');
+    shareButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            alert('Share functionality would be implemented here.');
+        });
+    });
+    
+    // Save button functionality
+    const saveButtons = document.querySelectorAll('.save-button');
+    saveButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (this.querySelector('i').classList.contains('far')) {
+                this.querySelector('i').classList.remove('far');
+                this.querySelector('i').classList.add('fas');
+                this.classList.add('text-primary');
+            } else {
+                this.querySelector('i').classList.remove('fas');
+                this.querySelector('i').classList.add('far');
+                this.classList.remove('text-primary');
+            }
+        });
+    });
+    
+    // Submit comment functionality
+    const submitCommentButtons = document.querySelectorAll('.submit-comment');
+    submitCommentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const commentText = document.getElementById(`commentText-${postId}`).value;
+            
+            if (commentText.trim() !== '') {
+                // In a real app, this would send the comment to the server
+                alert(`Comment submitted: ${commentText}`);
+                document.getElementById(`commentText-${postId}`).value = '';
+            }
+        });
+    });
+    
+    // Load more posts button
+    const loadMoreButton = document.querySelector('.load-more-button');
+    if (loadMoreButton) {
+        loadMoreButton.addEventListener('click', function() {
+            // In a real app, this would load more posts from the server
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Loading...';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-check me-2"></i> No more posts to load';
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-outline-secondary');
+                this.disabled = true;
+            }, 1500);
+        });
+    }
+    
+    // Submit post form
+    const submitPostButton = document.getElementById('submitPost');
+    if (submitPostButton) {
+        submitPostButton.addEventListener('click', function() {
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            
+            if (title.trim() === '' || content.trim() === '') {
+                alert('Please enter both a title and content for your post.');
+                return;
+            }
+            
+            // In a real app, this would submit the post to the server
+            alert('Post submitted successfully!');
+            
+            // Close the modal and reset form
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
+            modal.hide();
+            document.getElementById('createPostForm').reset();
+        });
+    }
+});
+</script>
+{% endblock %}

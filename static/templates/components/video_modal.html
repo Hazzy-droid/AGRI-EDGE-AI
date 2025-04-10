@@ -1,0 +1,203 @@
+<!-- Video Tutorial Modal Component -->
+<div class="modal fade" id="videoTutorialModal" tabindex="-1" aria-labelledby="videoTutorialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title" id="videoTutorialModalLabel">
+                    <i class="fas fa-video text-primary me-2"></i>
+                    <span id="videoModalTitle">Video Tutorial</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Video player container - will display text content instead of video -->
+                <div class="ratio ratio-16x9 d-flex align-items-center justify-content-center bg-gradient" 
+                     style="background: linear-gradient(135deg, #212529, #343a40);" id="videoPlayerContainer">
+                    <div class="text-center p-4">
+                        <i class="fas fa-film fa-3x mb-4 text-primary"></i>
+                        <h4 id="videoModalTitleContent" class="mb-3">Video Tutorial Content</h4>
+                        <p class="mb-3 lead">This placeholder represents the video tutorial that would be shown here.</p>
+                    </div>
+                </div>
+                
+                <!-- Video text content container -->
+                <div class="mt-4 border-top border-secondary pt-3" id="videoTextContent">
+                    <h5 class="mb-3"><i class="fas fa-info-circle text-info me-2"></i>Tutorial Content</h5>
+                    <div class="bg-dark p-3 rounded" id="videoTextDisplay">
+                        <p class="placeholder-text">Loading tutorial content...</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3" id="videoDescription">
+                    <!-- Video description will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Help Button (Floating) -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1030;">
+    <button type="button" class="btn btn-primary rounded-circle shadow" style="width: 56px; height: 56px;" 
+            data-bs-toggle="modal" data-bs-target="#videoTutorialModal" id="videoHelpButton">
+        <i class="fas fa-question-circle fa-lg"></i>
+    </button>
+</div>
+
+<script>
+// Function to load a specific tutorial video (placeholder version)
+function loadVideo(videoPath, title, description) {
+    // Check if video exists
+    fetch(videoPath)
+        .then(response => {
+            if (!response.ok) {
+                handleVideoError(videoPath);
+            }
+        })
+        .catch(() => handleVideoError(videoPath));
+    console.log("loadVideo called with:", { videoPath, title });
+    
+    // Update elements in the placeholder container
+    const modalTitle = document.getElementById('videoModalTitle');
+    const contentTitle = document.getElementById('videoModalTitleContent');
+    const videoDesc = document.getElementById('videoDescription');
+    const textDisplay = document.getElementById('videoTextDisplay');
+    
+    if (modalTitle) modalTitle.innerText = title;
+    if (contentTitle) contentTitle.innerText = title;
+    if (videoDesc) videoDesc.innerHTML = description;
+    
+    // Set a default message in case text loading fails
+    if (textDisplay) {
+        textDisplay.innerHTML = `<p class="text-light">Loading tutorial content...</p>`;
+    }
+    
+    // Also update the placeholder message
+    const existingTextElement = document.querySelector('#videoPlayerContainer p.lead');
+    if (existingTextElement) {
+        existingTextElement.innerHTML = "This placeholder represents the video tutorial that would demonstrate <strong>" + title + "</strong>";
+    }
+    
+    // Read content from the TXT file version if available
+    const txtPath = videoPath.replace('.mp4', '.txt');
+    console.log("Attempting to load text from:", txtPath);
+    
+    fetch(txtPath)
+        .then(response => {
+            console.log("Fetch response:", response);
+            if (!response.ok) {
+                console.warn("Text file not found or not accessible:", txtPath);
+                return "This video would demonstrate the key features and functionality of this section.";
+            }
+            return response.text();
+        })
+        .then(text => {
+            console.log("Received text content, length:", text.length);
+            
+            // Update the text display with formatted content
+            if (textDisplay) {
+                // Process text content to create HTML
+                let processedLines = [];
+                let inList = false;
+                
+                // Split text into lines and process each line
+                text.split('\n').forEach(line => {
+                    const trimmedLine = line.trim();
+                    
+                    // Check if this is a list item
+                    if (trimmedLine.startsWith('-')) {
+                        // If we aren't already in a list, start a new one
+                        if (!inList) {
+                            processedLines.push('<ul class="mb-3">');
+                            inList = true;
+                        }
+                        // Add the list item
+                        processedLines.push(`<li>${trimmedLine.substring(1).trim()}</li>`);
+                    } 
+                    // Check if this is a numbered list item
+                    else if (trimmedLine.match(/^\d+\./)) {
+                        // If we aren't already in a list, start a new one (as an ordered list)
+                        if (!inList) {
+                            processedLines.push('<ol class="mb-3">');
+                            inList = true;
+                        }
+                        // Add the list item
+                        processedLines.push(`<li>${trimmedLine.substring(trimmedLine.indexOf('.') + 1).trim()}</li>`);
+                    }
+                    // Check if this is an empty line
+                    else if (trimmedLine === '') {
+                        // If we were in a list, close it
+                        if (inList) {
+                            processedLines.push(processedLines[processedLines.length - 1].includes('<ol') ? '</ol>' : '</ul>');
+                            inList = false;
+                        }
+                        // Add a paragraph break if we're not at the start or end of the content
+                        if (processedLines.length > 0 && !processedLines[processedLines.length - 1].endsWith('</p>')) {
+                            processedLines.push('<p></p>');
+                        }
+                    }
+                    // This is a regular text line
+                    else {
+                        // If we were in a list, close it
+                        if (inList) {
+                            processedLines.push(processedLines[processedLines.length - 1].includes('<ol') ? '</ol>' : '</ul>');
+                            inList = false;
+                        }
+                        
+                        // Check if this looks like a heading (first line or after an empty line)
+                        if (processedLines.length === 0 || processedLines[processedLines.length - 1] === '<p></p>') {
+                            processedLines.push(`<h5 class="mt-3 mb-2">${trimmedLine}</h5>`);
+                        } else {
+                            // It's regular paragraph text
+                            processedLines.push(`<p>${trimmedLine}</p>`);
+                        }
+                    }
+                });
+                
+                // Close any open list at the end
+                if (inList) {
+                    processedLines.push(processedLines[processedLines.length - 1].includes('<ol') ? '</ol>' : '</ul>');
+                }
+                
+                // Join all lines and insert into the container
+                textDisplay.innerHTML = processedLines.join('\n');
+                console.log("Updated text display with formatted content");
+            }
+        })
+        .catch(error => {
+            console.error("Error loading or processing video text content:", error);
+            if (textDisplay) {
+                textDisplay.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Unable to load the tutorial content. The video would explain how to use this feature.
+                    </div>
+                    <p>This would be a detailed tutorial video showing how to use all features of this section.</p>
+                `;
+            }
+        });
+}
+
+// Function to set the default video for the current page
+function setPageDefaultVideo(videoPath, title, description) {
+    // Store the video info as data attributes on the help button
+    const helpButton = document.getElementById('videoHelpButton');
+    if (!helpButton) return;
+    
+    helpButton.setAttribute('data-video-path', videoPath);
+    helpButton.setAttribute('data-video-title', title);
+    helpButton.setAttribute('data-video-description', description);
+    
+    // Set up click handler for the help button
+    helpButton.addEventListener('click', function() {
+        loadVideo(
+            this.getAttribute('data-video-path'),
+            this.getAttribute('data-video-title'),
+            this.getAttribute('data-video-description')
+        );
+    });
+}
+</script>

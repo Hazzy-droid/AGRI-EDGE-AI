@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}External Service Proxy Documentation - Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">External Service Proxy Documentation</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        The Climate-Smart Agriculture Platform supports integration with external service proxies that 
+                        can handle authenticated API requests to third-party services like AI assistants and SMS notification services.
+                    </p>
+                    <p>
+                        This approach provides several advantages:
+                    </p>
+                    <ul>
+                        <li>Avoid storing sensitive API keys directly in this application</li>
+                        <li>Centralize API credential management for multiple applications</li>
+                        <li>Enable easier integration with existing systems that already have necessary credentials</li>
+                        <li>Add additional security, logging, and rate limiting at the proxy level</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Setting Up a Service Proxy</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        To set up an external service proxy, you need to create a microservice that:
+                    </p>
+                    <ol>
+                        <li>Securely stores API credentials for Perplexity AI and Twilio</li>
+                        <li>Exposes REST endpoints that this platform can call</li>
+                        <li>Handles authentication between your proxy and this platform</li>
+                        <li>Forwards requests to the appropriate third-party service</li>
+                    </ol>
+                    
+                    <h6 class="mt-4">Required Endpoints</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Method</th>
+                                    <th>Description</th>
+                                    <th>Request Payload</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>/ai/chat</code></td>
+                                    <td>POST</td>
+                                    <td>Process AI chat requests</td>
+                                    <td>
+                                        <pre><code>{
+  "query": "User's question",
+  "context": "conversation_context",
+  "conversation_history": []
+}</code></pre>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>/sms/send</code></td>
+                                    <td>POST</td>
+                                    <td>Send SMS messages</td>
+                                    <td>
+                                        <pre><code>{
+  "to_phone_number": "+1234567890",
+  "message": "SMS content",
+  "message_type": "alert"
+}</code></pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6 class="mt-4">Authentication</h6>
+                    <p>
+                        Authentication between this platform and your proxy service should use bearer token authentication:
+                    </p>
+                    <pre><code>Authorization: Bearer YOUR_SERVICE_PROXY_KEY</code></pre>
+                    
+                    <h6 class="mt-4">Response Format</h6>
+                    <p>
+                        All responses should return JSON with at least a <code>success</code> field to indicate 
+                        whether the operation succeeded:
+                    </p>
+                    <pre><code>{
+  "success": true,
+  "message": "Response message",
+  // Additional data specific to the endpoint
+}</code></pre>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Example Implementation</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Here's a simplified example of a service proxy implementation using Node.js and Express:
+                    </p>
+                    
+                    <pre class="bg-dark text-light p-3"><code>const express = require('express');
+const axios = require('axios');
+const twilio = require('twilio');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Service credentials (stored securely)
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+
+// Service proxy authentication key
+const SERVICE_PROXY_KEY = process.env.SERVICE_PROXY_KEY;
+
+// Middleware for authentication
+const authenticateRequest = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+  
+  const token = authHeader.split(' ')[1];
+  
+  if (token !== SERVICE_PROXY_KEY) {
+    return res.status(401).json({ success: false, error: 'Invalid token' });
+  }
+  
+  next();
+};
+
+app.use(express.json());
+app.use(authenticateRequest);
+
+// AI Chat endpoint
+app.post('/ai/chat', async (req, res) => {
+  try {
+    const { query, context, conversation_history } = req.body;
+    
+    // Call Perplexity API
+    const response = await axios.post(
+      'https://api.perplexity.ai/chat/completions',
+      {
+        model: 'llama-3.1-sonar-small-128k-online',
+        messages: conversation_history || [],
+        temperature: 0.7,
+        max_tokens: 1000,
+        stream: false
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: response.data.choices[0].message.content,
+      citations: response.data.citations || []
+    });
+  } catch (error) {
+    console.error('Error calling Perplexity API:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error processing AI request'
+    });
+  }
+});
+
+// SMS Send endpoint
+app.post('/sms/send', async (req, res) => {
+  try {
+    const { to_phone_number, message, message_type } = req.body;
+    
+    // Initialize Twilio client
+    const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    
+    // Send SMS
+    const twilioMessage = await client.messages.create({
+      body: message,
+      from: TWILIO_PHONE_NUMBER,
+      to: to_phone_number
+    });
+    
+    res.json({
+      success: true,
+      message_sid: twilioMessage.sid
+    });
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error sending SMS'
+    });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Service proxy running on port ${port}`);
+});</code></pre>
+
+                    <div class="alert alert-info mt-3">
+                        <strong>Note:</strong> This is a simplified example. In a production environment, 
+                        you should add proper error handling, logging, rate limiting, and security measures.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <a href="{{ url_for('admin.service_config') }}" class="btn btn-primary">
+                    <i class="bi bi-gear"></i> Back to Service Configuration
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

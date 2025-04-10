@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+
+{% block title %}Learning Dashboard | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="learning-dashboard">
+    <!-- Learning Progress Banner -->
+    <div class="progress-banner p-4 mb-4 rounded shadow-sm position-relative overflow-hidden">
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); opacity: 0.9; z-index: -1;"></div>
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="text-white">Your Learning Journey</h2>
+                <p class="text-light mb-3">Enhance your farming knowledge with our educational modules</p>
+                
+                <!-- Learning Stats -->
+                <div class="row g-3">
+                    <div class="col-sm-4 col-6">
+                        <div class="bg-white bg-opacity-25 rounded p-3 text-center">
+                            <div class="counter text-white display-6 fw-bold">{{ completed_modules|default('2') }}</div>
+                            <div class="text-white-50">Modules Completed</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-6">
+                        <div class="bg-white bg-opacity-25 rounded p-3 text-center">
+                            <div class="counter text-white display-6 fw-bold">{{ user_points|default('240') }}</div>
+                            <div class="text-white-50">Points Earned</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-6 mt-3 mt-sm-0">
+                        <div class="bg-white bg-opacity-25 rounded p-3 text-center">
+                            <div class="counter text-white display-6 fw-bold">{{ badges_earned|default('5') }}</div>
+                            <div class="text-white-50">Badges Earned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mt-4 mt-lg-0">
+                <div class="bg-white rounded p-3 shadow-sm">
+                    <h5>Current Progress</h5>
+                    <div class="current-module mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>{{ current_module_name|default('Soil Health Fundamentals') }}</span>
+                            <span class="badge bg-primary">{{ current_module_progress|default('75') }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ current_module_progress|default('75') }}%"></div>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <a href="#" class="btn btn-primary">Continue Learning</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learning Modules Section -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3><i class="fas fa-book me-2"></i> Learning Modules</h3>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter me-1"></i> Filter
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item active" href="#">All Modules</a></li>
+                    <li><a class="dropdown-item" href="#">In Progress</a></li>
+                    <li><a class="dropdown-item" href="#">Completed</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Beginner Level</a></li>
+                    <li><a class="dropdown-item" href="#">Intermediate Level</a></li>
+                    <li><a class="dropdown-item" href="#">Advanced Level</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Module Cards Grid -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <!-- Soil Health Module (In Progress) -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 learning-card position-relative">
+                    <div class="ribbon ribbon-top-right"><span class="bg-primary">IN PROGRESS</span></div>
+                    <div class="card-img-top position-relative">
+                        <img src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Soil Health" style="height: 180px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark">Intermediate</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-star text-warning me-1"></i> 100 points</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Soil Health Fundamentals</h5>
+                        <p class="card-text text-muted small">Learn about soil composition, testing methods, and strategies to improve soil health for optimal crop growth.</p>
+                        <div class="progress mb-3" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                            <span>75% complete</span>
+                            <span>Lesson 6 of 8</span>
+                        </div>
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-primary">Continue Learning</a>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="module-stats small">
+                                <i class="fas fa-book me-1"></i> 8 Lessons
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-clock me-1"></i> 2.5 hours
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-question-circle me-1"></i> 1 Quiz
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Water Conservation Module (Completed) -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 learning-card position-relative">
+                    <div class="ribbon ribbon-top-right"><span class="bg-success">COMPLETED</span></div>
+                    <div class="card-img-top position-relative">
+                        <img src="https://images.unsplash.com/photo-1558642084-fd07fae5282e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Water Conservation" style="height: 180px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">Beginner</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-star text-warning me-1"></i> 75 points</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Water Conservation Techniques</h5>
+                        <p class="card-text text-muted small">Master efficient irrigation methods and water management strategies to conserve water while maintaining crop health.</p>
+                        <div class="progress mb-3" style="height: 5px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                            <span>100% complete</span>
+                            <span>All lessons completed</span>
+                        </div>
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-outline-success">Review Module</a>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="module-stats small">
+                                <i class="fas fa-book me-1"></i> 6 Lessons
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-clock me-1"></i> 1.5 hours
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-question-circle me-1"></i> 1 Quiz
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Climate-Adapted Farming (Locked) -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 learning-card position-relative">
+                    <div class="ribbon ribbon-top-right"><span class="bg-secondary">LOCKED</span></div>
+                    <div class="card-img-top position-relative">
+                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Climate Adapted Farming" style="height: 180px; width: 100%; object-fit: cover; filter: grayscale(100%);">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-danger">Advanced</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-star text-warning me-1"></i> 150 points</span>
+                            </div>
+                        </div>
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.5);">
+                            <div class="text-center">
+                                <i class="fas fa-lock fa-3x text-white mb-2"></i>
+                                <div class="text-white">Complete previous modules to unlock</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Climate-Adapted Farming</h5>
+                        <p class="card-text text-muted small">Develop strategies to adapt your farming practices to changing climate conditions and extreme weather events.</p>
+                        <div class="progress mb-3" style="height: 5px;">
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                            <span>0% complete</span>
+                            <span>Locked</span>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-lock me-1"></i> Locked
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="module-stats small">
+                                <i class="fas fa-book me-1"></i> 10 Lessons
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-clock me-1"></i> 3 hours
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-question-circle me-1"></i> 2 Quizzes
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sustainable Pest Management -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 learning-card">
+                    <div class="card-img-top position-relative">
+                        <img src="https://images.unsplash.com/photo-1517256064527-09c73fc73e38?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Pest Management" style="height: 180px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark">Intermediate</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-star text-warning me-1"></i> 125 points</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Sustainable Pest Management</h5>
+                        <p class="card-text text-muted small">Learn effective, environmentally-friendly approaches to pest control without relying on harmful chemicals.</p>
+                        <div class="progress mb-3" style="height: 5px;">
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                            <span>0% complete</span>
+                            <span>Not started</span>
+                        </div>
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-outline-primary">Start Learning</a>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="module-stats small">
+                                <i class="fas fa-book me-1"></i> 7 Lessons
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-clock me-1"></i> 2 hours
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-question-circle me-1"></i> 1 Quiz
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Crop Rotation & Companion Planting -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 learning-card">
+                    <div class="card-img-top position-relative">
+                        <img src="https://images.unsplash.com/photo-1567696153798-9111f9cd3d0d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Crop Rotation" style="height: 180px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark">Intermediate</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-star text-warning me-1"></i> 100 points</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Crop Rotation & Companion Planting</h5>
+                        <p class="card-text text-muted small">Discover how strategic crop arrangements can enhance soil health, reduce pests, and improve yields naturally.</p>
+                        <div class="progress mb-3" style="height: 5px;">
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                            <span>0% complete</span>
+                            <span>Not started</span>
+                        </div>
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-outline-primary">Start Learning</a>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="module-stats small">
+                                <i class="fas fa-book me-1"></i> 6 Lessons
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-clock me-1"></i> 1.5 hours
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-question-circle me-1"></i> 1 Quiz
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Post-Harvest Management -->
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 learning-card position-relative">
+                    <div class="ribbon ribbon-top-right"><span class="bg-info">NEW</span></div>
+                    <div class="card-img-top position-relative">
+                        <img src="https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Post-Harvest Management" style="height: 180px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">Beginner</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-star text-warning me-1"></i> 75 points</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Post-Harvest Management</h5>
+                        <p class="card-text text-muted small">Learn techniques to minimize post-harvest losses and maintain product quality during storage and transportation.</p>
+                        <div class="progress mb-3" style="height: 5px;">
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                            <span>0% complete</span>
+                            <span>Not started</span>
+                        </div>
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-outline-primary">Start Learning</a>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="module-stats small">
+                                <i class="fas fa-book me-1"></i> 5 Lessons
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-clock me-1"></i> 1 hour
+                            </div>
+                            <div class="module-stats small">
+                                <i class="fas fa-question-circle me-1"></i> 1 Quiz
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievements Section -->
+    <div class="achievement-section mt-5">
+        <h3 class="mb-4"><i class="fas fa-trophy me-2"></i> Your Achievements</h3>
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Achievement Cards -->
+                <div class="row g-3">
+                    <!-- Soil Expert Achievement -->
+                    <div class="col-md-4 col-6">
+                        <div class="achievement-card text-center p-3 rounded shadow-sm h-100">
+                            <div class="achievement-icon rounded-circle bg-warning text-dark mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-flask fa-2x"></i>
+                            </div>
+                            <h6>Soil Expert</h6>
+                            <div class="small text-muted mb-2">Completed Soil Health Module</div>
+                            <div class="badge bg-success">Earned</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Water Wise Achievement -->
+                    <div class="col-md-4 col-6">
+                        <div class="achievement-card text-center p-3 rounded shadow-sm h-100">
+                            <div class="achievement-icon rounded-circle bg-info text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-tint fa-2x"></i>
+                            </div>
+                            <h6>Water Wise</h6>
+                            <div class="small text-muted mb-2">Completed Water Conservation Module</div>
+                            <div class="badge bg-success">Earned</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz Master Achievement -->
+                    <div class="col-md-4 col-6">
+                        <div class="achievement-card text-center p-3 rounded shadow-sm h-100">
+                            <div class="achievement-icon rounded-circle bg-primary text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-award fa-2x"></i>
+                            </div>
+                            <h6>Quiz Master</h6>
+                            <div class="small text-muted mb-2">Score 90%+ on 3 different quizzes</div>
+                            <div class="badge bg-success">Earned</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Knowledge Seeker (Locked) -->
+                    <div class="col-md-4 col-6">
+                        <div class="achievement-card text-center p-3 rounded shadow-sm h-100" style="opacity: 0.6;">
+                            <div class="achievement-icon rounded-circle bg-secondary text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-book-reader fa-2x"></i>
+                            </div>
+                            <h6>Knowledge Seeker</h6>
+                            <div class="small text-muted mb-2">Complete 5 learning modules</div>
+                            <div class="badge bg-secondary">2/5 Complete</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Field Implementer (Locked) -->
+                    <div class="col-md-4 col-6">
+                        <div class="achievement-card text-center p-3 rounded shadow-sm h-100" style="opacity: 0.6;">
+                            <div class="achievement-icon rounded-circle bg-secondary text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-seedling fa-2x"></i>
+                            </div>
+                            <h6>Field Implementer</h6>
+                            <div class="small text-muted mb-2">Apply 10 learned techniques to your farm</div>
+                            <div class="badge bg-secondary">3/10 Complete</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Community Teacher (Locked) -->
+                    <div class="col-md-4 col-6">
+                        <div class="achievement-card text-center p-3 rounded shadow-sm h-100" style="opacity: 0.6;">
+                            <div class="achievement-icon rounded-circle bg-secondary text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                            <h6>Community Teacher</h6>
+                            <div class="small text-muted mb-2">Share knowledge with 5 other farmers</div>
+                            <div class="badge bg-secondary">0/5 Complete</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mt-4 mt-lg-0">
+                <!-- Gamification Level -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-gamepad me-2"></i> Your Level</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="position-relative d-inline-block">
+                                <div class="progress rounded-circle" style="height: 120px; width: 120px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                                </div>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <div class="display-4 fw-bold">3</div>
+                                    <div>Level</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Progress to next level</span>
+                                <span>75%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                            </div>
+                            <div class="text-end small text-muted mt-1">240/320 points</div>
+                        </div>
+                        
+                        <div class="level-benefits p-3 rounded" style="background-color: rgba(13, 110, 253, 0.1);">
+                            <h6><i class="fas fa-unlock me-2"></i> Level 3 Benefits</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="fas fa-check-circle text-success me-2"></i> Access to Intermediate modules</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i> Community discussion participation</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i> Download educational resources</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coming Soon Modules -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Coming Soon</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-solar-panel text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Renewable Energy for Farms</h6>
+                                        <div class="small text-muted">Coming May 2025</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-leaf text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Organic Certification</h6>
+                                        <div class="small text-muted">Coming June 2025</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-money-bill-wave text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Farm Business Management</h6>
+                                        <div class="small text-muted">Coming July 2025</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Animation for counters
+    document.addEventListener('DOMContentLoaded', function() {
+        const counters = document.querySelectorAll('.counter');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent);
+            let count = 0;
+            const duration = 1500; // Animation duration in milliseconds
+            const interval = Math.floor(duration / target);
+            
+            const timer = setInterval(() => {
+                count += 1;
+                counter.textContent = count;
+                
+                if (count >= target) {
+                    clearInterval(timer);
+                    counter.textContent = target;
+                }
+            }, interval);
+        });
+    });
+</script>
+<style>
+    /* Progress Banner Background */
+    .progress-banner {
+        background-image: url('https://images.unsplash.com/photo-1520052203542-d3095f1b6cf0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    
+    /* Learning Card Styling */
+    .learning-card {
+        transition: all 0.3s ease;
+    }
+    
+    .learning-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Ribbon Styling */
+    .ribbon {
+        width: 150px;
+        height: 150px;
+        overflow: hidden;
+        position: absolute;
+        z-index: 1;
+    }
+    
+    .ribbon::before,
+    .ribbon::after {
+        position: absolute;
+        z-index: -1;
+        content: '';
+        display: block;
+    }
+    
+    .ribbon span {
+        position: absolute;
+        display: block;
+        width: 225px;
+        padding: 5px 0;
+        background-color: #3498db;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        text-shadow: 0 1px 1px rgba(0,0,0,.2);
+        text-align: center;
+    }
+    
+    .ribbon-top-right {
+        top: -10px;
+        right: -10px;
+    }
+    
+    .ribbon-top-right::before,
+    .ribbon-top-right::after {
+        border-top-color: transparent;
+        border-right-color: transparent;
+    }
+    
+    .ribbon-top-right::before {
+        top: 0;
+        left: 0;
+    }
+    
+    .ribbon-top-right::after {
+        bottom: 0;
+        right: 0;
+    }
+    
+    .ribbon-top-right span {
+        left: -25px;
+        top: 30px;
+        transform: rotate(45deg);
+    }
+    
+    /* Achievement Card Styling */
+    .achievement-card {
+        background-color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .achievement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Make the page responsive */
+    @media (max-width: 768px) {
+        .achievement-icon {
+            width: 60px !important;
+            height: 60px !important;
+        }
+        
+        .achievement-icon i {
+            font-size: 1.5rem !important;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,3 @@
+Video: Weather Forecasting Tutorial
+Using weather data for agricultural planning
+This is a placeholder for the actual tutorial video.

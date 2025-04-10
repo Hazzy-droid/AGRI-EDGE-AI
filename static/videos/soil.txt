@@ -1,0 +1,3 @@
+Video: Soil Monitoring Tutorial
+Interpreting soil moisture and fertility data
+This is a placeholder for the actual tutorial video.

@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ module.title }} | Learning Module{% endblock %}
+
+{% block content %}
+<div class="module-container">
+    <!-- Module Header -->
+    <div class="module-header p-4 mb-4 rounded shadow-sm position-relative overflow-hidden">
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); opacity: 0.9; z-index: -1;"></div>
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.learning_dashboard') }}" class="text-white">Learning Dashboard</a></li>
+                        <li class="breadcrumb-item active text-white-50" aria-current="page">{{ module.title }}</li>
+                    </ol>
+                </nav>
+                <h2 class="text-white">{{ module.title }}</h2>
+                <p class="text-light mb-3">{{ module.description }}</p>
+                
+                <!-- Module Meta Info -->
+                <div class="row g-3">
+                    <div class="col-sm-4 col-6">
+                        <div class="bg-white bg-opacity-25 rounded p-2 text-center">
+                            <div class="text-white-50 small">Difficulty</div>
+                            <div class="text-white">{{ module.difficulty }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-6">
+                        <div class="bg-white bg-opacity-25 rounded p-2 text-center">
+                            <div class="text-white-50 small">Lessons</div>
+                            <div class="text-white">{{ module.lessons|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-6 mt-3 mt-sm-0">
+                        <div class="bg-white bg-opacity-25 rounded p-2 text-center">
+                            <div class="text-white-50 small">Points</div>
+                            <div class="text-white">{{ module.points }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mt-4 mt-lg-0 text-center">
+                <div class="progress-circle mx-auto position-relative" style="width: 160px; height: 160px;">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg"
+                            d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path class="circle"
+                            stroke-dasharray="{{ module.progress }}, 100"
+                            d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <text x="18" y="20.35" class="percentage">{{ module.progress }}%</text>
+                    </svg>
+                    <div class="text-white mt-2">Module Progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Module Content -->
+    <div class="row">
+        <!-- Lessons List -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i> Lessons</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for lesson in module.lessons %}
+                        <a href="{{ url_for('main.learning_lesson', module_id=module.id, lesson_id=lesson.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 {% if module.next_lesson_id == lesson.id %}active{% endif %}">
+                            <div class="d-flex align-items-center">
+                                <div class="lesson-status me-3">
+                                    {% if lesson.completed %}
+                                    <span class="badge rounded-circle bg-success d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    {% elif module.next_lesson_id == lesson.id %}
+                                    <span class="badge rounded-circle bg-warning d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                                        <i class="fas fa-play"></i>
+                                    </span>
+                                    {% else %}
+                                    <span class="badge rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">Lesson {{ lesson.id }}: {{ lesson.title }}</div>
+                                    {% if lesson.completed %}
+                                    <span class="text-success small">Completed</span>
+                                    {% elif module.next_lesson_id == lesson.id %}
+                                    <span class="text-warning small">In Progress</span>
+                                    {% else %}
+                                    <span class="text-muted small">Locked</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div>
+                                {% if lesson.completed %}
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-redo me-1"></i> Review
+                                </span>
+                                {% elif module.next_lesson_id == lesson.id %}
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-play me-1"></i> Continue
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-lock me-1"></i> Locked
+                                </span>
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    {% if module.progress == 100 %}
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-trophy me-2"></i> Congratulations! You've completed this module.
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('main.learning_lesson', module_id=module.id, lesson_id=module.next_lesson_id) }}" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i> Continue Learning
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module Info and Resources -->
+        <div class="col-lg-4">
+            <!-- Skills You'll Gain -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Skills You'll Gain</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item border-0 px-0">
+                            <i class="fas fa-check-circle text-success me-2"></i> Soil testing and analysis
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <i class="fas fa-check-circle text-success me-2"></i> Soil health management
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <i class="fas fa-check-circle text-success me-2"></i> Nutrient management planning
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <i class="fas fa-check-circle text-success me-2"></i> Soil conservation practices
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Additional Resources -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-link me-2"></i> Additional Resources</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-file-pdf text-danger"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">Soil Testing Methods Guide</div>
+                                    <div class="small text-muted">PDF Document, 2.4 MB</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-file-excel text-success"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">Nutrient Calculation Spreadsheet</div>
+                                    <div class="small text-muted">Excel File, 1.1 MB</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-video text-primary"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">Field Soil Sampling Tutorial</div>
+                                    <div class="small text-muted">Video, 12:34 minutes</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Certificate -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-certificate me-2"></i> Certificate</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if module.progress == 100 %}
+                    <div class="certificate-preview mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
+                        <i class="fas fa-certificate fa-3x text-warning mb-3"></i>
+                        <h6>Certificate of Completion</h6>
+                        <p class="small text-muted mb-0">{{ module.title }}</p>
+                    </div>
+                    <a href="#" class="btn btn-warning">
+                        <i class="fas fa-download me-1"></i> Download Certificate
+                    </a>
+                    {% else %}
+                    <div class="certificate-locked p-3">
+                        <i class="fas fa-lock fa-3x text-secondary mb-3"></i>
+                        <h6 class="text-muted">Certificate Locked</h6>
+                        <p class="small text-muted mb-3">Complete all lessons to unlock your certificate</p>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ module.progress }}%"></div>
+                        </div>
+                        <p class="small text-muted mt-2">{{ module.progress }}% complete</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    /* Module Header Background */
+    .module-header {
+        background-image: url('https://images.unsplash.com/photo-1520052203542-d3095f1b6cf0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    
+    /* Progress Circle SVG Styling */
+    .circular-chart {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+    
+    .circle-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.3);
+        stroke-width: 2.8;
+    }
+    
+    .circle {
+        fill: none;
+        stroke: #ffffff;
+        stroke-width: 2.8;
+        stroke-linecap: round;
+        animation: progress 1s ease-out forwards;
+    }
+    
+    @keyframes progress {
+        0% {
+            stroke-dasharray: 0 100;
+        }
+    }
+    
+    .percentage {
+        fill: #fff;
+        font-size: 0.6em;
+        text-anchor: middle;
+        font-weight: bold;
+    }
+    
+    /* Lesson Item Styling */
+    .list-group-item.active {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #212529;
+        border-color: rgba(13, 110, 253, 0.2);
+    }
+    
+    /* Certificate Styling */
+    .certificate-preview {
+        transition: all 0.3s ease;
+    }
+    
+    .certificate-preview:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

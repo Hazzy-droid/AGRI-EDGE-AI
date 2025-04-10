@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+
+{% block title %}Climate-Smart Agriculture Platform | Home{% endblock %}
+
+{% block head_extras %}
+<style>
+    .hero-section {
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                    url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1332&q=80');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: white;
+        padding: 100px 0;
+        margin-bottom: 40px;
+        border-radius: 8px;
+    }
+    
+    .ai-assistant-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .ai-assistant-button {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--bs-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .ai-assistant-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .ai-assistant-panel {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        width: 350px;
+        height: 500px;
+        background-color: var(--bs-body-bg);
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .ai-assistant-header {
+        padding: 15px;
+        border-bottom: 1px solid var(--bs-border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .ai-assistant-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .message {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 18px;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .message-ai {
+        background-color: var(--bs-primary-rgb, .1);
+        border: 1px solid rgba(var(--bs-primary-rgb), .2);
+        align-self: flex-start;
+        border-bottom-left-radius: 5px;
+    }
+    
+    .message-user {
+        background-color: rgba(var(--bs-primary-rgb), .2);
+        border: 1px solid rgba(var(--bs-primary-rgb), .3);
+        align-self: flex-end;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .ai-assistant-input {
+        padding: 15px;
+        border-top: 1px solid var(--bs-border-color);
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Image Background -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 text-center">
+                <h1 class="display-3 mb-4 fw-bold">
+                    <i class="fas fa-leaf text-success me-2"></i>
+                    Climate-Smart Agriculture Platform
+                </h1>
+                <p class="lead fs-4 mb-4">
+                    Empowering African farmers with AI-driven insights for sustainable and resilient farming practices
+                </p>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-success btn-lg mt-2">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="welcome-section text-center mb-5">
+                <h2 class="mb-3">
+                    Edge AI for Climate-Smart Agriculture
+                </h2>
+                <p class="lead">
+                    An advanced platform to empower African farmers with data-driven insights for sustainable and resilient farming practices.
+                </p>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3 class="mb-3"><i class="fas fa-bullseye me-2"></i>Our Mission</h3>
+                            <p>
+                                To address the challenges facing smallholder farmers in Africa due to climate change by providing accessible, affordable, and actionable agricultural insights derived from advanced AI technology.
+                            </p>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="platform-features">
+                                <h3 class="mb-3"><i class="fas fa-cogs me-2"></i>Platform Features</h3>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-satellite text-info me-2"></i>
+                                        <strong>Satellite Imagery Analysis</strong> - Monitor crop health using multi-spectral satellite data
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-cloud-sun text-warning me-2"></i>
+                                        <strong>Hyper-local Weather Forecasting</strong> - Get accurate weather predictions for your farm
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-seedling text-success me-2"></i>
+                                        <strong>Soil Sensor Integration</strong> - Track soil health with real-time data
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-brain text-danger me-2"></i>
+                                        <strong>Edge AI Predictions</strong> - Receive actionable insights even with limited connectivity
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-mobile-alt fa-3x mb-3 text-primary"></i>
+                            <h4 class="card-title">Mobile-First Design</h4>
+                            <p class="card-text">Optimized for smartphones with offline capabilities for areas with limited connectivity.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-globe-africa fa-3x mb-3 text-success"></i>
+                            <h4 class="card-title">Multilingual Support</h4>
+                            <p class="card-text">Available in multiple African languages to ensure accessibility for all farmers.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-3x mb-3 text-warning"></i>
+                            <h4 class="card-title">Knowledge Sharing</h4>
+                            <p class="card-text">Connect with other farmers and share successful agricultural practices.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="mb-3"><i class="fas fa-hand-pointer me-2"></i>Get Started</h3>
+                    <p>
+                        Navigate to the Dashboard to see real-time insights about your farm, or explore specific modules for detailed information on satellite imagery, weather forecasting, soil conditions, and personalized recommendations.
+                    </p>
+                    <div class="row mt-4">
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary d-block">
+                                <i class="fas fa-tachometer-alt mb-2 d-block fs-3"></i>
+                                Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('main.satellite') }}" class="btn btn-outline-secondary d-block">
+                                <i class="fas fa-satellite mb-2 d-block fs-3"></i>
+                                Satellite
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('main.weather') }}" class="btn btn-outline-secondary d-block">
+                                <i class="fas fa-cloud-sun mb-2 d-block fs-3"></i>
+                                Weather
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="{{ url_for('main.soil') }}" class="btn btn-outline-secondary d-block">
+                                <i class="fas fa-seedling mb-2 d-block fs-3"></i>
+                                Soil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Assistant Widget -->
+<div class="ai-assistant-widget">
+    <div class="ai-assistant-button pulse-animation" id="aiAssistantButton">
+        <i class="fas fa-robot fa-lg"></i>
+    </div>
+    
+    <div class="ai-assistant-panel" id="aiAssistantPanel">
+        <div class="ai-assistant-header">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-robot text-primary me-2"></i>
+                <h5 class="mb-0">AgriBot Assistant</h5>
+            </div>
+            <button type="button" class="btn-close" id="closeAssistantBtn"></button>
+        </div>
+        
+        <div class="ai-assistant-messages" id="aiMessages">
+            <!-- Messages will be populated by JavaScript -->
+        </div>
+        
+        <div class="ai-assistant-input">
+            <form id="aiAssistantForm">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="aiMessageInput" placeholder="Ask me anything about farming...">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AI Assistant elements
+    const aiButton = document.getElementById('aiAssistantButton');
+    const aiPanel = document.getElementById('aiAssistantPanel');
+    const closeBtn = document.getElementById('closeAssistantBtn');
+    const aiForm = document.getElementById('aiAssistantForm');
+    const aiInput = document.getElementById('aiMessageInput');
+    const aiMessages = document.getElementById('aiMessages');
+    
+    // Comprehensive knowledge base for the AI assistant
+    const aiResponses = {
+        "greeting": [
+            "Hello! I'm AgriBot, your farming assistant. How can I help you today?",
+            "Welcome to the Climate-Smart Agriculture Platform! I'm here to help with any farming questions.",
+            "Hi there! I'm your AI farming assistant. Ask me about crop management, weather forecasts, or how to navigate the platform!"
+        ],
+        "weather": [
+            "You can check detailed weather forecasts in the Weather section. Our platform provides hyper-local weather forecasts for your specific farm location with 7-day predictions, precipitation probability, wind speed, and temperature trends.",
+            "Our weather forecasting system integrates data from multiple sources including satellite observations, ground stations, and regional meteorological models. This helps you plan your farming activities with greater accuracy.",
+            "Climate-smart agriculture requires reliable weather data. Our system can alert you about upcoming extreme weather events like heavy rainfall, droughts, or frost with 72-hour advance notice."
+        ],
+        "satellite": [
+            "The satellite imagery section shows you the health of your crops using NDVI analysis. Values above 0.6 indicate healthy vegetation, while values below 0.3 may indicate stress or problems that need attention.",
+            "Our satellite imagery can detect water stress, pest infestations, and nutrient deficiencies before they become visible to the naked eye. The system uses multi-spectral analysis with refresh rates of 5 days for most regions in Africa.",
+            "The farm boundary drawing tool lets you define specific zones for monitoring. You can compare NDVI values over time to track crop development stages and identify areas that need attention.",
+            "Our satellite system uses both Sentinel-2 (10m resolution) and Landsat-8 (30m resolution) imagery, offering different bands for specialized analysis of crop health, water content, and biomass estimation."
+        ],
+        "soil": [
+            "Healthy soil is crucial for good yields. Our soil monitoring tools help you track moisture (ideal levels vary by crop but range from 20-60%), nutrients (N, P, K ratios), and pH levels (most crops prefer 5.5-7.0).",
+            "Did you know you can connect soil sensors to our platform for real-time soil data? We support integration with popular sensor types like Sentek, METER Group, and local DIY sensor networks.",
+            "Our soil analysis includes detailed recommendations for organic matter improvement, erosion control, and sustainable soil management practices specific to your soil type and crops.",
+            "The platform can recommend optimal fertilizer applications based on soil test results. For example, nitrogen-fixing cover crops can reduce the need for synthetic fertilizers by 20-40% while improving soil structure."
+        ],
+        "crops": [
+            "Different crops have specific water requirements. Maize needs about 500-800mm of water throughout its growing season, while crops like sorghum and millet are more drought-resistant, requiring 250-600mm.",
+            "For crop rotation planning, follow these general rules: (1) Don't plant the same family of crops consecutively, (2) Alternate between heavy feeders and light feeders, (3) Include at least one legume in your rotation to fix nitrogen.",
+            "Intercropping compatible plants like maize and beans can increase total yield by 20-60% compared to monoculture, while reducing pest pressure and improving soil health.",
+            "Climate-smart agriculture recommends drought-tolerant varieties that can withstand temperature variations. For example, NERICA rice varieties can yield 50% more than traditional varieties with less water."
+        ],
+        "pests": [
+            "Integrated Pest Management (IPM) combines biological controls, cultural practices, and minimal chemical use. Start with resistant varieties, encourage beneficial insects, and use pesticides only as a last resort.",
+            "Common pests like fall armyworm can be monitored using our early detection tools. The platform can help identify infestation patterns based on weather conditions and crop development stages.",
+            "Natural pest control methods include companion planting (e.g., marigolds repel nematodes, basil deters aphids), introducing beneficial insects like ladybugs, and using neem oil as a natural insecticide.",
+            "Our disease prediction models use weather data to forecast the risk of fungal diseases like late blight in potatoes or blast in rice. Preventive measures can be taken 7-10 days before conditions become favorable for disease."
+        ],
+        "irrigation": [
+            "Drip irrigation can save 30-50% of water compared to flood irrigation, while increasing yields by 20-90% depending on the crop. Our platform helps calculate optimal irrigation scheduling based on crop water needs and soil moisture.",
+            "Water conservation techniques include mulching (which can reduce evaporation by up to 70%), rainwater harvesting, and deficit irrigation during less critical growth stages.",
+            "Smart irrigation scheduling based on soil moisture sensors can reduce water use by 15-30% while maintaining or improving yields. Our system provides customized irrigation recommendations for your specific crops and conditions.",
+            "For smallholder farmers, low-cost irrigation solutions like clay pot irrigation (Olla) can reduce water usage by 50-70% compared to surface irrigation, making it ideal for water-scarce regions."
+        ],
+        "marketplace": [
+            "Our marketplace connects you directly with other farmers, suppliers, and buyers. You can buy seeds, equipment, or sell your produce without intermediaries, potentially increasing your profits by 15-25%.",
+            "The marketplace feature lets you contact sellers directly through our messaging system. You can also read reviews from other farmers to ensure quality before making a purchase.",
+            "When selling produce, consider highlighting sustainable farming practices as they can command premium prices of 10-30% higher than conventional products in many markets.",
+            "For equipment sharing, the marketplace facilitates rental agreements between farmers, reducing capital costs for expensive machinery like tractors or irrigation systems by up to 60%."
+        ],
+        "community": [
+            "The community section is where over 50,000 farmers share knowledge and experiences. It's segmented by regions and crop types to help you find relevant information quickly.",
+            "You can ask questions, share success stories, or find local farming events in the community section. Our most active contributors have helped solve over 5,000 farming challenges last year alone.",
+            "Community knowledge sharing has led to the documentation of over 200 indigenous farming practices that are both sustainable and climate-resilient, preserving valuable traditional knowledge.",
+            "Farmer-to-farmer learning through our platform has been shown to increase adoption of new techniques by 40-60% compared to traditional extension services, as farmers trust peer experiences."
+        ],
+        "climate_adaptation": [
+            "Climate-smart agriculture combines three approaches: sustainably increasing productivity, adapting to climate change, and reducing greenhouse gas emissions where possible.",
+            "Adaptation strategies for rising temperatures include shifting planting dates, using heat-tolerant varieties, increasing shade through agroforestry, and improving water management.",
+            "For unpredictable rainfall patterns, our platform recommends water harvesting techniques, soil moisture conservation, diversified cropping systems, and weather-indexed insurance.",
+            "Carbon sequestration in soils through practices like reduced tillage, cover cropping, and organic matter management can store 0.1-1 ton of carbon per hectare annually while improving soil health."
+        ],
+        "agroforestry": [
+            "Agroforestry systems integrate trees, crops, and/or livestock. Benefits include increased biodiversity, improved soil fertility, enhanced water infiltration, and additional income streams.",
+            "For maize-based systems, species like Faidherbia albida can increase yields by 100-400% through nitrogen fixation, while providing fodder, firewood, and natural pest control.",
+            "Alley cropping with nitrogen-fixing trees like Gliricidia or Leucaena can reduce fertilizer needs by 30-50% while providing green manure and erosion control on sloped land.",
+            "Silvopastoral systems combine trees, forage plants, and livestock. This can increase animal productivity by 20-30% through improved microclimate, nutrition, and welfare."
+        ],
+        "soil_health": [
+            "The five principles of soil health are: 1) Minimize soil disturbance, 2) Maximize soil cover, 3) Maximize biodiversity, 4) Maximize living roots, and 5) Integrate livestock where possible.",
+            "Cover crops like mucuna, lablab, or vetch can fix 50-200 kg of nitrogen per hectare, reduce erosion by 80%, suppress weeds, and add 2-5 tons of organic matter per hectare annually.",
+            "Soil organic matter is the foundation of soil health. Each 1% increase can hold an additional 20,000 liters of water per hectare and release nutrients worth $15-20 in fertilizer equivalent.",
+            "Composting farm residues can produce 2-5 tons of compost per hectare, supplying 50-150 kg of nitrogen, phosphorus, and potassium, plus micronutrients and beneficial microorganisms."
+        ],
+        "water_management": [
+            "Water harvesting techniques like zai pits, half-moons, and tied ridges can increase water availability by 30-50% and yields by 50-100% in semi-arid regions.",
+            "Groundwater recharge can be enhanced through contour bunds, check dams, and percolation ponds. These structures slow runoff, allowing more water to infiltrate the soil profile.",
+            "Wetland conservation and restoration provides natural water filtration, flood control, and habitat for biodiversity. Protected wetlands can yield sustainable harvests of fish, reeds, and medicinal plants.",
+            "Water quality monitoring is crucial for irrigation. Our platform helps track salinity, which should be below 0.75 dS/m for sensitive crops, and pH, ideally between 6.5-8.5 for most irrigation water."
+        ],
+        "livestock": [
+            "Integrating livestock with crops creates a circular system: crops provide feed and fodder, livestock provide manure and traction, improving overall farm productivity by 20-60%.",
+            "Rotational grazing can increase forage productivity by 30-70% while improving soil carbon sequestration, water infiltration, and biodiversity compared to continuous grazing.",
+            "Heat stress in livestock can reduce milk production by 10-25% and weight gain by 15-30%. Our system provides alerts and management recommendations during extreme weather events.",
+            "Indigenous livestock breeds often have better resistance to local diseases, parasites, and climate stresses. Our community knowledge base includes information on over 100 local breeds and their specific advantages."
+        ],
+        "value_addition": [
+            "Post-harvest processing can increase product value by 30-300%. Simple technologies like solar dryers can reduce food loss by 50-80% while preserving nutritional content.",
+            "Quality standards and certification (organic, fair trade) can increase market access and product prices by 15-40%. Our platform provides guidance on certification processes relevant to African markets.",
+            "Cooperative marketing through farmer groups can increase bargaining power and access to premium markets. Groups using our platform report price improvements of 10-25% on average.",
+            "Value chain analysis tools in our platform help identify bottlenecks and opportunities for increasing income through better timing, quality improvement, or direct marketing."
+        ],
+        "finance": [
+            "Our platform connects farmers with microfinance institutions and agricultural banks offering loans specifically designed for smallholder needs, with flexible repayment terms based on harvest cycles.",
+            "Weather-indexed insurance schemes protect against crop failure due to drought, excessive rainfall, or other climate risks. Premiums typically range from 5-10% of the insured value.",
+            "Savings groups facilitated through our community feature help members accumulate capital for investments in farm improvements, with annual returns on savings of 15-30%.",
+            "Mobile money integration allows for quick payment processing in the marketplace, receipt of loan disbursements, and payment of insurance premiums without visiting physical banking locations."
+        ],
+        "energy": [
+            "Solar irrigation pumps can pay for themselves in 2-3 years compared to diesel pumps, with near-zero operating costs thereafter and no greenhouse gas emissions.",
+            "Biogas digesters convert animal manure and crop residues into cooking fuel and high-quality fertilizer. A system serving a household with 2-3 cattle can provide 2-3 hours of cooking gas daily.",
+            "Solar dryers for food preservation can reduce post-harvest losses by 50-80% while preserving nutritional value better than open-air sun drying or smoking.",
+            "Energy-efficient cookstoves reduce firewood consumption by 30-60%, decreasing deforestation pressure and indoor air pollution while saving 1-2 hours daily in firewood collection."
+        ],
+        "nutrition": [
+            "Dietary diversity scores measured by the number of food groups consumed regularly correlate strongly with household nutritional security. Aim for at least 5 different food groups daily.",
+            "Biofortified crop varieties like orange-fleshed sweet potato (vitamin A), iron-rich beans, and high-protein maize can address specific nutrient deficiencies common in rural communities.",
+            "Home gardens with vegetables, fruits, and small livestock can provide 30-50% of a household's micronutrient needs while generating income from surplus production.",
+            "Traditional African leafy vegetables like amaranth, spider plant, and African nightshade contain 2-10 times more micronutrients than exotic vegetables like cabbage or lettuce."
+        ],
+        "platform_navigation": [
+            "Our dashboard provides a comprehensive overview of your farm's status, recent recommendations, and alerts. It's your starting point for daily farm management.",
+            "The satellite imagery section allows you to monitor crop health using NDVI analysis. You can draw farm boundaries, analyze multiple fields, and track changes over time.",
+            "Weather forecasting provides 7-day predictions specific to your farm location. It includes rainfall probability, temperature trends, and alerts for extreme weather events.",
+            "Soil monitoring integrates data from sensors and manual tests to track moisture, nutrients, and other key indicators. It provides specific recommendations for soil management.",
+            "The community section connects you with other farmers to share knowledge, ask questions, and learn about successful practices in your region or with similar crops.",
+            "The marketplace facilitates buying and selling of agricultural products, equipment sharing, and service exchanges between farmers. You can message sellers directly from product listings.",
+            "To change language settings, use the dropdown menu in the top navigation bar. We currently support English, French, Swahili, Hausa, Yoruba, Amharic, and Arabic."
+        ],
+        "technology": [
+            "Our platform works offline during connectivity gaps by caching essential data on your device. When internet connection is restored, data automatically synchronizes.",
+            "The mobile app uses less than 5MB of data per week for basic functions, making it accessible even in areas with limited internet connectivity.",
+            "Low-cost soil sensors compatible with our platform start at $20-50 and can last 2-5 years with proper maintenance. They measure moisture, temperature, and optionally pH or nutrients.",
+            "Satellite data is processed using advanced algorithms that can detect plant stress 1-2 weeks before visible symptoms appear, giving you time to intervene before significant damage occurs."
+        ],
+        "fallback": [
+            "That's an excellent question about farming. Based on agricultural research and farmer experiences in our community, I can offer some insights and direct you to relevant sections of our platform.",
+            "I understand you're interested in this agricultural topic. Our platform has resources, community discussions, and expert recommendations that might help answer your question in detail.",
+            "This is an important aspect of climate-smart agriculture. While I can provide general guidance, you might find more region-specific information by checking our community section or knowledge base.",
+            "Thanks for bringing up this farming challenge. Many farmers in our network have faced similar issues. The most successful approaches involve combining traditional knowledge with new techniques that our platform can help you explore."
+        ]
+    };
+    
+    // Toggle AI Assistant panel
+    aiButton.addEventListener('click', function() {
+        if (aiPanel.style.display === 'flex') {
+            closeAssistant();
+        } else {
+            openAssistant();
+        }
+    });
+    
+    // Close button handler
+    closeBtn.addEventListener('click', closeAssistant);
+    
+    // Open the assistant panel
+    function openAssistant() {
+        aiPanel.style.display = 'flex';
+        aiButton.classList.remove('pulse-animation');
+        
+        // Add greeting message if no messages exist yet
+        if (aiMessages.children.length === 0) {
+            const randomGreeting = aiResponses.greeting[Math.floor(Math.random() * aiResponses.greeting.length)];
+            addMessage('ai', randomGreeting);
+        }
+    }
+    
+    // Close the assistant panel
+    function closeAssistant() {
+        aiPanel.style.display = 'none';
+    }
+    
+    // Add a message to the chat
+    function addMessage(sender, text) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `message message-${sender}`;
+        messageElement.innerText = text;
+        aiMessages.appendChild(messageElement);
+        
+        // Scroll to the bottom
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+    
+    // Handle form submission
+    aiForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const userMessage = aiInput.value.trim();
+        if (!userMessage) return;
+        
+        // Add user message
+        addMessage('user', userMessage);
+        aiInput.value = '';
+        
+        // Simulate typing
+        setTimeout(() => {
+            // Generate AI response based on message content
+            let response;
+            const lowerMsg = userMessage.toLowerCase();
+            
+            // Determine the most relevant category based on keywords
+            let category = 'fallback';
+            
+            // Weather related
+            if (lowerMsg.includes('weather') || lowerMsg.includes('rain') || lowerMsg.includes('forecast') || 
+                lowerMsg.includes('temperature') || lowerMsg.includes('climate') || lowerMsg.includes('drought') || 
+                lowerMsg.includes('precipitation')) {
+                category = 'weather';
+            }
+            // Satellite imagery related
+            else if (lowerMsg.includes('satellite') || lowerMsg.includes('imagery') || lowerMsg.includes('ndvi') || 
+                     lowerMsg.includes('remote sensing') || lowerMsg.includes('aerial') || lowerMsg.includes('crop health') ||
+                     lowerMsg.includes('farm boundary') || lowerMsg.includes('field mapping')) {
+                category = 'satellite';
+            }
+            // Soil related
+            else if (lowerMsg.includes('soil') || lowerMsg.includes('moisture') || lowerMsg.includes('nutrient') || 
+                     lowerMsg.includes('fertility') || lowerMsg.includes('ph') || lowerMsg.includes('compost') || 
+                     lowerMsg.includes('organic matter') || lowerMsg.includes('erosion')) {
+                category = 'soil';
+                // Check if it's specifically about soil health principles
+                if (lowerMsg.includes('soil health') || lowerMsg.includes('soil quality') || lowerMsg.includes('cover crop')) {
+                    category = 'soil_health';
+                }
+            }
+            // Crop specific
+            else if (lowerMsg.includes('crop') || lowerMsg.includes('plant') || lowerMsg.includes('seed') || 
+                     lowerMsg.includes('harvest') || lowerMsg.includes('yield') || lowerMsg.includes('rotation') || 
+                     lowerMsg.includes('variety') || lowerMsg.includes('maize') || lowerMsg.includes('rice') || 
+                     lowerMsg.includes('wheat') || lowerMsg.includes('millet') || lowerMsg.includes('cassava')) {
+                category = 'crops';
+            }
+            // Pest and disease related
+            else if (lowerMsg.includes('pest') || lowerMsg.includes('disease') || lowerMsg.includes('insect') || 
+                     lowerMsg.includes('fungus') || lowerMsg.includes('weed') || lowerMsg.includes('control') || 
+                     lowerMsg.includes('spray') || lowerMsg.includes('infestation') || lowerMsg.includes('armyworm')) {
+                category = 'pests';
+            }
+            // Irrigation related
+            else if (lowerMsg.includes('irrigation') || lowerMsg.includes('water') || lowerMsg.includes('drip') || 
+                     lowerMsg.includes('sprinkler') || lowerMsg.includes('watering') || lowerMsg.includes('drought')) {
+                category = 'irrigation';
+                // Check if it's more about broader water management
+                if (lowerMsg.includes('water management') || lowerMsg.includes('water harvesting') || 
+                    lowerMsg.includes('watershed') || lowerMsg.includes('groundwater')) {
+                    category = 'water_management';
+                }
+            }
+            // Marketplace related
+            else if (lowerMsg.includes('market') || lowerMsg.includes('sell') || lowerMsg.includes('buy') || 
+                     lowerMsg.includes('price') || lowerMsg.includes('trade') || lowerMsg.includes('product') || 
+                     lowerMsg.includes('equipment') || lowerMsg.includes('seller') || lowerMsg.includes('purchase')) {
+                category = 'marketplace';
+                // Check if it's specifically about adding value to products
+                if (lowerMsg.includes('value add') || lowerMsg.includes('processing') || 
+                    lowerMsg.includes('packaging') || lowerMsg.includes('quality')) {
+                    category = 'value_addition';
+                }
+            }
+            // Community related
+            else if (lowerMsg.includes('community') || lowerMsg.includes('forum') || lowerMsg.includes('farmer') || 
+                     lowerMsg.includes('discussion') || lowerMsg.includes('share') || lowerMsg.includes('knowledge') || 
+                     lowerMsg.includes('group') || lowerMsg.includes('post') || lowerMsg.includes('comment')) {
+                category = 'community';
+            }
+            // Climate adaptation related
+            else if (lowerMsg.includes('climate change') || lowerMsg.includes('adapt') || lowerMsg.includes('resilience') || 
+                     lowerMsg.includes('carbon') || lowerMsg.includes('greenhouse') || lowerMsg.includes('sustainable') || 
+                     lowerMsg.includes('emission')) {
+                category = 'climate_adaptation';
+            }
+            // Agroforestry related
+            else if (lowerMsg.includes('agroforestry') || lowerMsg.includes('tree') || lowerMsg.includes('forest') || 
+                     lowerMsg.includes('shade') || lowerMsg.includes('alley crop') || lowerMsg.includes('silvopasture')) {
+                category = 'agroforestry';
+            }
+            // Livestock related
+            else if (lowerMsg.includes('livestock') || lowerMsg.includes('animal') || lowerMsg.includes('cattle') || 
+                     lowerMsg.includes('goat') || lowerMsg.includes('sheep') || lowerMsg.includes('poultry') || 
+                     lowerMsg.includes('feed') || lowerMsg.includes('grazing')) {
+                category = 'livestock';
+            }
+            // Finance related
+            else if (lowerMsg.includes('finance') || lowerMsg.includes('loan') || lowerMsg.includes('credit') || 
+                     lowerMsg.includes('insurance') || lowerMsg.includes('money') || lowerMsg.includes('saving') || 
+                     lowerMsg.includes('invest') || lowerMsg.includes('bank')) {
+                category = 'finance';
+            }
+            // Energy related
+            else if (lowerMsg.includes('energy') || lowerMsg.includes('solar') || lowerMsg.includes('biogas') || 
+                     lowerMsg.includes('fuel') || lowerMsg.includes('power') || lowerMsg.includes('electricity') || 
+                     lowerMsg.includes('pump')) {
+                category = 'energy';
+            }
+            // Nutrition related
+            else if (lowerMsg.includes('nutrition') || lowerMsg.includes('food') || lowerMsg.includes('diet') || 
+                     lowerMsg.includes('health') || lowerMsg.includes('vitamin') || lowerMsg.includes('protein') || 
+                     lowerMsg.includes('mineral')) {
+                category = 'nutrition';
+            }
+            // Platform navigation related
+            else if (lowerMsg.includes('platform') || lowerMsg.includes('use') || lowerMsg.includes('navigate') || 
+                     lowerMsg.includes('login') || lowerMsg.includes('feature') || lowerMsg.includes('dashboard') || 
+                     lowerMsg.includes('settings') || lowerMsg.includes('how to') || lowerMsg.includes('help')) {
+                category = 'platform_navigation';
+            }
+            // Technology related
+            else if (lowerMsg.includes('technology') || lowerMsg.includes('app') || lowerMsg.includes('offline') || 
+                     lowerMsg.includes('device') || lowerMsg.includes('smartphone') || lowerMsg.includes('internet') || 
+                     lowerMsg.includes('mobile') || lowerMsg.includes('data')) {
+                category = 'technology';
+            }
+            // For greetings
+            else if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('greetings') || 
+                     lowerMsg.includes('howdy') || lowerMsg.includes('hey') || lowerMsg.match(/^(hi|hello)$/)) {
+                category = 'greeting';
+            }
+            
+            // Get a random response from the selected category
+            response = aiResponses[category][Math.floor(Math.random() * aiResponses[category].length)];
+            
+            // Add AI response
+            addMessage('ai', response);
+        }, 1000);
+    });
+    
+    // Function to check if the user has seen the assistant before
+    function hasSeenAssistant() {
+        return localStorage.getItem('hasSeenAssistant') === 'true';
+    }
+    
+    // Set assistant as seen
+    function setAssistantSeen() {
+        localStorage.setItem('hasSeenAssistant', 'true');
+    }
+    
+    // Automatically open assistant after 5 seconds if user hasn't seen it before
+    if (!hasSeenAssistant()) {
+        setTimeout(() => {
+            openAssistant();
+            setAssistantSeen();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

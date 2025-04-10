@@ -1,0 +1,3 @@
+Video: Satellite Imagery Tutorial
+Understanding NDVI and crop health monitoring
+This is a placeholder for the actual tutorial video.

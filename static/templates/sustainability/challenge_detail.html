@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ challenge.title }} | Sustainability Challenges{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0"><i class="fas fa-trophy text-warning me-2"></i> {{ challenge.title }}</h1>
+                <div>
+                    <a href="{{ url_for('sustainability.challenges') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to All Challenges
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted mt-2">Category: <span class="badge bg-secondary">{{ challenge.category|title }}</span></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Challenge Header Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                {% if challenge.image_url %}
+                    <div class="card-img-top" style="height: 240px; background: url('{{ challenge.image_url }}') center/cover no-repeat;"></div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <span class="badge bg-{% if challenge.difficulty <= 2 %}success{% elif challenge.difficulty <= 4 %}warning text-dark{% else %}danger{% endif %} me-2">
+                                Level {{ challenge.difficulty }}
+                            </span>
+                            <span class="badge bg-warning text-dark">{{ challenge.points_awarded }} points</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-info">
+                                <i class="fas fa-calendar-alt me-1"></i> {{ (challenge.end_date|string)[:10] }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <h3 class="h5 mb-3">Challenge Description</h3>
+                    <p>{{ challenge.description }}</p>
+
+                    {% if not user_challenge %}
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x text-info"></i>
+                                </div>
+                                <div>
+                                    <h4 class="alert-heading">Challenge Overview</h4>
+                                    <p class="mb-0">Complete all required practices to earn {{ challenge.points_awarded }} points and a special achievement badge.</p>
+                                    <p class="mb-0">This challenge ends on {{ (challenge.end_date|string)[:10] }}.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <form action="{{ url_for('sustainability.join_challenge', challenge_id=challenge.id) }}" method="post">
+                                <button type="submit" class="btn btn-warning btn-lg w-100">
+                                    <i class="fas fa-play-circle me-2"></i> Join This Challenge
+                                </button>
+                            </form>
+                        </div>
+                    {% elif user_challenge.status == 'completed' %}
+                        <div class="alert alert-success">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-trophy fa-2x text-success"></i>
+                                </div>
+                                <div>
+                                    <h4 class="alert-heading">Challenge Completed!</h4>
+                                    <p class="mb-0">Congratulations! You've successfully completed this challenge on {{ (user_challenge.completion_date|string)[:10] }}.</p>
+                                    <p class="mb-0">Points earned: <strong>{{ challenge.points_awarded }}</strong></p>
+                                    {% if user_challenge.badge_earned %}
+                                        <p class="mb-0">You've also earned a special achievement badge!</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-clock fa-2x text-warning"></i>
+                                </div>
+                                <div>
+                                    <h4 class="alert-heading">Challenge In Progress</h4>
+                                    <p class="mb-0">You joined this challenge on {{ (user_challenge.start_date|string)[:10] }}.</p>
+                                    <p class="mb-0">Complete all required practices to earn {{ challenge.points_awarded }} points.</p>
+                                    <p class="mb-0">You've completed {{ user_challenge.progress_percentage }}% of this challenge.</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Required Practices -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> Required Practices</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Practice</th>
+                                    <th>Impact</th>
+                                    <th>Difficulty</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for practice in practices %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}">
+                                                {{ practice.name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% for i in range(1, 6) %}
+                                                    {% if i <= practice.impact_level %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-muted"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if practice.difficulty <= 2 %}success{% elif practice.difficulty <= 4 %}warning text-dark{% else %}danger{% endif %}">
+                                                Level {{ practice.difficulty }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if practice.id in implemented_practices %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i> Implemented
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-times-circle me-1"></i> Not Implemented
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Tracker -->
+            {% if user_challenge and user_challenge.status == 'in_progress' %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Your Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Progress: {{ user_challenge.progress_percentage }}%</span>
+                                <span>{{ implemented_practices|length }}/{{ practices|length }} practices</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                     role="progressbar" 
+                                     style="width: {{ user_challenge.progress_percentage }}%;" 
+                                     aria-valuenow="{{ user_challenge.progress_percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ user_challenge.progress_percentage }}%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Next steps to complete this challenge:</h6>
+                            <ul class="list-group list-group-flush">
+                                {% set remaining_count = 0 %}
+                                {% for practice in practices %}
+                                    {% if practice.id not in implemented_practices %}
+                                        {% set remaining_count = remaining_count + 1 %}
+                                        {% if remaining_count <= 3 %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-arrow-right text-primary me-2"></i>
+                                                    Implement <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}">{{ practice.name }}</a>
+                                                </div>
+                                                <a href="{{ url_for('sustainability.practice_detail', practice_id=practice.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    View Practice
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if remaining_count > 3 %}
+                                    <li class="list-group-item text-muted">
+                                        <i class="fas fa-ellipsis-h me-2"></i>
+                                        And {{ remaining_count - 3 }} more practice(s) to implement
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Challenge Stats Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Challenge Stats</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-users me-2"></i> Participants</span>
+                            <span class="badge bg-primary rounded-pill">{{ challenge.participants|default(0, true) }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-check-circle me-2"></i> Completion Rate</span>
+                            <span class="badge bg-success rounded-pill">{{ challenge.completion_rate|default(0, true) }}%</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-star me-2"></i> Average Rating</span>
+                            <span class="badge bg-warning text-dark rounded-pill">{{ challenge.avg_rating|default(0, true) }}/5</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-alt me-2"></i> Duration</span>
+                            <span class="badge bg-info rounded-pill">{{ challenge.duration_days|default(30, true) }} days</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Badge Card (if available) -->
+            {% if challenge.badge %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-award me-2"></i> Achievement Badge</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            {% if challenge.badge.image_url %}
+                                <img src="{{ challenge.badge.image_url }}" alt="{{ challenge.badge.name }}" class="img-fluid" style="max-height: 150px;">
+                            {% else %}
+                                <div class="display-1 text-warning">
+                                    <i class="fas fa-medal"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <h5>{{ challenge.badge.name }}</h5>
+                        <p class="text-muted">{{ challenge.badge.description }}</p>
+                        {% if user_challenge and user_challenge.badge_earned %}
+                            <div class="alert alert-success py-2">
+                                <i class="fas fa-check-circle me-1"></i> You've earned this badge!
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Community Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i> Community</h5>
+                </div>
+                <div class="card-body">
+                    <p>Connect with other farmers participating in this challenge:</p>
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-1"></i> Join Discussion
+                        </a>
+                        <a href="#" class="btn btn-outline-success">
+                            <i class="fas fa-share-alt me-1"></i> Share Your Progress
+                        </a>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Recent Activity</h6>
+                    <div class="list-group list-group-flush small">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Jane D. completed this challenge</span>
+                                <small class="text-muted">2 days ago</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Samuel M. joined this challenge</span>
+                                <small class="text-muted">3 days ago</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>3 farmers shared their progress</span>
+                                <small class="text-muted">1 week ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Challenge detail page loaded');
+    });
+</script>
+{% endblock %}

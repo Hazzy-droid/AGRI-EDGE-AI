@@ -1,0 +1,105 @@
+<!-- Welcome Video Component (Featured on Login Page) -->
+<div class="card border-0 shadow mb-4">
+    <div class="card-body p-0 bg-dark">
+        <div class="ratio ratio-16x9 d-flex align-items-center justify-content-center">
+            <div class="text-center p-4">
+                <i class="fas fa-video fa-3x text-primary mb-3"></i>
+                <h4>Welcome to Climate-Smart Agriculture Platform</h4>
+                <p class="mb-0 mt-2">
+                    This placeholder represents the welcome video that would explain how our platform 
+                    integrates satellite imagery, IoT soil sensors, and weather data to provide 
+                    actionable insights for African farmers.
+                </p>
+                <button class="btn btn-primary mt-3" id="welcomeVideoBtn" data-bs-toggle="modal" data-bs-target="#videoTutorialModal">
+                    <i class="fas fa-play-circle me-2"></i> Watch Video Tutorial
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i> 
+            Welcome to Climate-Smart Agriculture Platform
+        </h5>
+        <p class="mb-0 mt-2 small">
+            Watch this introduction video to learn about our platform and how it can help you improve your farming practices.
+        </p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Welcome video component initialized");
+    
+    // Set up the welcome video button to show the tutorial
+    const welcomeVideoBtn = document.getElementById('welcomeVideoBtn');
+    
+    if (!welcomeVideoBtn) {
+        console.error("Welcome video button not found!");
+    }
+    
+    if (typeof VIDEO_TUTORIALS === 'undefined') {
+        console.error("VIDEO_TUTORIALS is not defined! Check if video-tutorials.js is loaded.");
+    } else {
+        console.log("VIDEO_TUTORIALS is available:", VIDEO_TUTORIALS);
+    }
+    
+    if (typeof loadVideo !== 'function') {
+        console.error("loadVideo function is not available! Check if video_modal.html is included.");
+    } else {
+        console.log("loadVideo function is available");
+    }
+    
+    if (welcomeVideoBtn && typeof VIDEO_TUTORIALS !== 'undefined') {
+        console.log("Setting up click handler for welcome video button");
+        welcomeVideoBtn.addEventListener('click', function() {
+            console.log("Welcome video button clicked");
+            if (typeof loadVideo === 'function') {
+                try {
+                    console.log("Loading welcome video with:", VIDEO_TUTORIALS.welcome);
+                    loadVideo(
+                        VIDEO_TUTORIALS.welcome.path,
+                        VIDEO_TUTORIALS.welcome.title,
+                        VIDEO_TUTORIALS.welcome.description
+                    );
+                } catch (error) {
+                    console.error("Error loading welcome video:", error);
+                }
+            } else {
+                console.error("loadVideo function is not available!");
+            }
+        });
+    }
+    
+    // Manually trigger video loading for testing
+    const manuallyLoadVideo = function() {
+        try {
+            if (typeof loadVideo === 'function' && typeof VIDEO_TUTORIALS !== 'undefined') {
+                console.log("Manually loading welcome video");
+                loadVideo(
+                    "/static/videos/welcome.mp4",
+                    "Welcome to Climate-Smart Agriculture Platform",
+                    "This video provides an overview of our platform features."
+                );
+            }
+        } catch (error) {
+            console.error("Error in manual video loading:", error);
+        }
+    };
+    
+    // Add a manual trigger button for testing
+    const container = document.querySelector('.card-footer');
+    if (container) {
+        const testButton = document.createElement('button');
+        testButton.className = 'btn btn-sm btn-light mt-2';
+        testButton.textContent = 'Test Video Modal';
+        testButton.onclick = function(e) {
+            e.preventDefault();
+            manuallyLoadVideo();
+            const videoModal = new bootstrap.Modal(document.getElementById('videoTutorialModal'));
+            videoModal.show();
+        };
+        container.appendChild(testButton);
+    }
+});
+</script>

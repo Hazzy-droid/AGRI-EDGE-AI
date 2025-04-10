@@ -1,0 +1,3 @@
+Video: Dashboard Tutorial
+Learn how to use the main dashboard
+This is a placeholder for the actual tutorial video.

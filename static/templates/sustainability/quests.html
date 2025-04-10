@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Sustainability Quests | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0"><i class="fas fa-scroll text-primary me-2"></i> Sustainability Quests</h1>
+                <div>
+                    <a href="{{ url_for('sustainability.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted mt-2">Complete step-by-step sustainability quests to learn new skills and earn rewards</p>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="all" selected>All Categories</option>
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="seasonal">Seasonal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="timeFilter">
+                                <option value="all" selected>Any Duration</option>
+                                <option value="short">Short (< 1 week)</option>
+                                <option value="medium">Medium (1-2 weeks)</option>
+                                <option value="long">Long (> 2 weeks)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="all" selected>All Quests</option>
+                                <option value="not-started">Not Started</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button class="btn btn-primary" id="applyFilters">
+                                    <i class="fas fa-filter me-1"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Quests -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h4 mb-3">Available Quests</h2>
+            
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="questsContainer">
+                {% for quest in active_quests %}
+                    <div class="col quest-card" 
+                         data-category="{{ quest.category }}" 
+                         data-time="{{ 'short' if quest.time_limit_days < 7 else 'medium' if quest.time_limit_days < 15 else 'long' }}"
+                         data-status="{% if quest.id in user_quests %}{{ user_quests[quest.id].status }}{% else %}not-started{% endif %}">
+                        <div class="card h-100 border-0 shadow-sm">
+                            {% if quest.image_url %}
+                                <div class="card-img-top position-relative" style="height: 160px; background: url('{{ quest.image_url }}') center/cover no-repeat;">
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-primary">{{ quest.points_awarded }} points</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 160px;">
+                                    <i class="fas fa-scroll fa-4x text-primary opacity-25"></i>
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-primary">{{ quest.points_awarded }} points</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">{{ quest.title }}</h5>
+                                    <span class="badge {% if quest.category == 'beginner' %}bg-success{% elif quest.category == 'intermediate' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ quest.category|title }}
+                                    </span>
+                                </div>
+                                
+                                <p class="card-text text-muted mb-3">{{ quest.description|truncate(120) }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-secondary">{{ quest.steps|length }} steps</span>
+                                    <small class="text-muted">
+                                        {{ quest.time_limit_days }} day limit
+                                    </small>
+                                </div>
+                                
+                                {% if quest.id in user_quests %}
+                                    {% set user_quest = user_quests[quest.id] %}
+                                    {% if user_quest.status == 'completed' %}
+                                        <div class="alert alert-success mb-3 py-2">
+                                            <i class="fas fa-check-circle me-1"></i> Quest Completed!
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.quest_detail', quest_id=quest.id) }}" class="btn btn-outline-success">
+                                                <i class="fas fa-eye me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    {% elif user_quest.status == 'in_progress' %}
+                                        <div class="progress mb-3" style="height: 10px;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                                 role="progressbar" 
+                                                 style="width: {{ user_quest.progress_percentage }}%;" 
+                                                 aria-valuenow="{{ user_quest.progress_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                                            <span>{{ user_quest.progress_percentage }}% complete</span>
+                                            <span>Due: {{ (user_quest.due_date|string)[:10] }}</span>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('sustainability.quest_detail', quest_id=quest.id) }}" class="btn btn-primary">
+                                                <i class="fas fa-play-circle me-1"></i> Continue Quest
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="d-grid">
+                                        <a href="{{ url_for('sustainability.quest_detail', quest_id=quest.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> View Quest
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="card-footer bg-white">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i> {{ quest.participants|default(0, true) }} farmers participating
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No active quests available at the moment. Check back soon!
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Quest (If applicable) -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h4 mb-3">Featured Quest</h2>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-4 position-relative">
+                            <div class="h-100" style="background: url('/static/images/sustainability/featured-quest.jpg') center/cover no-repeat;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3);"></div>
+                                <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
+                                    <h3 class="fw-bold">Seasonal Water Management</h3>
+                                    <span class="badge bg-warning text-dark px-3 py-2">Featured Quest</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h4>Learn Advanced Water Conservation Techniques</h4>
+                                <p>This comprehensive quest will guide you through setting up sustainable water management practices for the dry season, including rainwater harvesting, moisture-retaining techniques, and efficient irrigation systems.</p>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between text-muted small mb-2">
+                                        <span>5-step guided process</span>
+                                        <span>400 points upon completion</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-muted small mt-1">
+                                        <span>372 farmers participating</span>
+                                        <span>40% avg completion rate</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <a href="#" class="btn btn-primary">
+                                        <i class="fas fa-trophy me-2"></i> Start This Featured Quest
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quest Benefits Section -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h2 class="h4 mb-3">Benefits of Completing Quests</h2>
+            
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3 text-primary">
+                                <i class="fas fa-graduation-cap fa-3x"></i>
+                            </div>
+                            <h5>Build Practical Skills</h5>
+                            <p class="text-muted">Learn new sustainable farming techniques with step-by-step guidance tailored to your local conditions.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3 text-success">
+                                <i class="fas fa-leaf fa-3x"></i>
+                            </div>
+                            <h5>Increase Farm Sustainability</h5>
+                            <p class="text-muted">Implement proven practices that improve your farm's resilience to climate change impacts.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-award fa-3x"></i>
+                            </div>
+                            <h5>Earn Rewards & Recognition</h5>
+                            <p class="text-muted">Gain points, badges, and access to special resources by completing sustainability quests.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        
+        applyFiltersBtn.addEventListener('click', function() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const quests = document.querySelectorAll('.quest-card');
+            
+            quests.forEach(quest => {
+                let showQuest = true;
+                
+                // Category filter
+                if (categoryFilter !== 'all' && quest.dataset.category !== categoryFilter) {
+                    showQuest = false;
+                }
+                
+                // Time filter
+                if (timeFilter !== 'all' && quest.dataset.time !== timeFilter) {
+                    showQuest = false;
+                }
+                
+                // Status filter
+                if (statusFilter !== 'all' && quest.dataset.status !== statusFilter) {
+                    showQuest = false;
+                }
+                
+                quest.style.display = showQuest ? '' : 'none';
+            });
+            
+            // Check if no quests are visible
+            let visibleQuests = Array.from(quests).filter(q => q.style.display !== 'none').length;
+            
+            const container = document.getElementById('questsContainer');
+            const noResultsMessage = document.querySelector('.no-results-message');
+            
+            if (visibleQuests === 0) {
+                if (!noResultsMessage) {
+                    const message = document.createElement('div');
+                    message.className = 'col-12 no-results-message';
+                    message.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No quests match your filter criteria. Please try different filters.
+                        </div>
+                    `;
+                    container.appendChild(message);
+                }
+            } else if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
+        });
+    });
+</script>
+{% endblock %}

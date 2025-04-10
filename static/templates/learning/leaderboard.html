@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Learning Leaderboard - Climate-Smart Agriculture{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Page header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('learning.learning_dashboard') }}">Learning Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Leaderboard</li>
+                </ol>
+            </nav>
+            <h1 class="display-5 mb-0">Learning Leaderboard</h1>
+            <p class="lead text-muted">See how you rank among the community's top learners</p>
+        </div>
+    </div>
+    
+    <!-- Your ranking -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-info bg-opacity-25">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-1 text-center">
+                            <h2 class="mb-0">#{{ user_rank }}</h2>
+                            <small class="text-muted">Your Rank</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-dark text-center d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 50px; height: 50px;">
+                                    <span class="display-6">{{ current_user.username[0]|upper }}</span>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">{{ current_user.username }}</h5>
+                                    <small class="text-muted">
+                                        {% if current_user.farm_name %}{{ current_user.farm_name }}{% else %}Farmer{% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ (current_user.level / 20) * 100 }}%;" 
+                                     aria-valuenow="{{ current_user.level }}" 
+                                     aria-valuemin="0" aria-valuemax="20">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Level {{ current_user.level }}</small>
+                                <small class="text-muted">{{ current_user.learning_points }} points</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-end">
+                                <a href="{{ url_for('learning.learning_dashboard') }}" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-graduation-cap"></i> Continue Learning
+                                </a>
+                                <a href="{{ url_for('learning.view_achievements') }}" class="btn btn-outline-warning">
+                                    <i class="fas fa-award"></i> View Achievements
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 bg-dark">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group" role="group" aria-label="Leaderboard filters">
+                            <button type="button" class="btn btn-sm btn-outline-light active">All Time</button>
+                            <button type="button" class="btn btn-sm btn-outline-light">This Month</button>
+                            <button type="button" class="btn btn-sm btn-outline-light">This Week</button>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="input-group input-group-sm me-2">
+                                <input type="text" class="form-control bg-dark text-light" placeholder="Search by username">
+                                <button class="btn btn-outline-light" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="regionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    All Regions
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="regionDropdown">
+                                    <li><a class="dropdown-item active" href="#">All Regions</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#">Eastern Africa</a></li>
+                                    <li><a class="dropdown-item" href="#">Western Africa</a></li>
+                                    <li><a class="dropdown-item" href="#">Southern Africa</a></li>
+                                    <li><a class="dropdown-item" href="#">Northern Africa</a></li>
+                                    <li><a class="dropdown-item" href="#">Central Africa</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaderboard table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 bg-dark">
+                <div class="table-responsive">
+                    <table class="table table-dark mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 70px;">Rank</th>
+                                <th>Farmer</th>
+                                <th>Region</th>
+                                <th>Level</th>
+                                <th>Points</th>
+                                <th>Achievements</th>
+                                <th>Modules</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in top_learners %}
+                            <tr class="{% if user.id == current_user.id %}bg-info bg-opacity-25{% endif %}">
+                                <td class="text-center align-middle">
+                                    {% if loop.index == 1 %}
+                                    <div class="text-warning"><i class="fas fa-trophy"></i> 1</div>
+                                    {% elif loop.index == 2 %}
+                                    <div class="text-secondary"><i class="fas fa-trophy"></i> 2</div>
+                                    {% elif loop.index == 3 %}
+                                    <div class="text-danger"><i class="fas fa-trophy"></i> 3</div>
+                                    {% else %}
+                                    {{ loop.index }}
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-dark text-center d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 40px; height: 40px;">
+                                            <span>{{ user.username[0]|upper }}</span>
+                                        </div>
+                                        <div>
+                                            <div>{{ user.username }}</div>
+                                            <small class="text-muted">{% if user.farm_name %}{{ user.farm_name }}{% else %}Farmer{% endif %}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    {% if user.location %}{{ user.location }}{% else %}Unknown{% endif %}
+                                </td>
+                                <td class="align-middle">
+                                    <span class="badge bg-success">Level {{ user.level }}</span>
+                                </td>
+                                <td class="align-middle">
+                                    <strong>{{ user.learning_points }}</strong>
+                                </td>
+                                <td class="align-middle">
+                                    <!-- Would display achievement count from a relationship -->
+                                    <span class="badge bg-secondary">0</span>
+                                </td>
+                                <td class="align-middle">
+                                    <!-- Would display module count from a relationship -->
+                                    <span class="badge bg-secondary">0</span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    {% if user.id != current_user.id %}
+                                    <button class="btn btn-sm btn-outline-light">
+                                        <i class="fas fa-user-plus"></i> Follow
+                                    </button>
+                                    {% else %}
+                                    <span class="badge bg-info">You</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="alert alert-info mb-0">
+                                        No farmers have earned learning points yet. Start learning to be the first on the leaderboard!
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <nav aria-label="Leaderboard pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

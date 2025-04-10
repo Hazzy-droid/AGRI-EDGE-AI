@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner p-4 mb-4 rounded shadow-sm position-relative overflow-hidden">
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, #1a936f, #114b5f); opacity: 0.9; z-index: -1;"></div>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="text-white">Welcome back, <strong>{{ current_user.username }}</strong></h2>
+                <p class="text-light mb-0">Here's your farm status overview for today, {{ current_date }}</p>
+                
+                <!-- Farm Stats Row -->
+                <div class="row mt-3">
+                    <div class="col-md-4 col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white p-2 d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 small">Farms</div>
+                                <div class="text-white">{{ farms|length if farms else 0 }} registered</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white p-2 d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <i class="fas fa-seedling text-success"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 small">Crops</div>
+                                <div class="text-white">{{ crops|length if crops else 0 }} types</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-6 mt-3 mt-md-0">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white p-2 d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <i class="fas fa-tachometer-alt text-warning"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 small">Total Area</div>
+                                <div class="text-white">{{ total_area|default('0') }} hectares</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                <div class="bg-white bg-opacity-25 rounded p-3 d-inline-block">
+                    <div class="text-white">Gamification Level</div>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="position-relative">
+                            <div class="progress rounded-circle" style="height: 100px; width: 100px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ level_progress|default('25') }}%"></div>
+                            </div>
+                            <div class="position-absolute top-50 start-50 translate-middle text-white">
+                                <div class="display-6 fw-bold">{{ current_user.level|default('1') }}</div>
+                                <div class="small">Level</div>
+                            </div>
+                        </div>
+                        <div class="ms-3 text-start text-white">
+                            <div><i class="fas fa-star me-1 text-warning"></i> {{ current_user.total_points|default('0') }} Points</div>
+                            <div class="mt-1"><i class="fas fa-trophy me-1 text-warning"></i> {{ achievements|length if achievements else 0 }} Badges</div>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ points_to_next_level_percent|default('10') }}%"></div>
+                            </div>
+                            <div class="small mt-1">{{ points_to_next_level|default('100') }} points to Level {{ current_user.level|default('1') + 1 }}</div>
+                            <div class="mt-3">
+                                <a href="{{ url_for('main.learning_dashboard') }}" class="btn btn-sm btn-light me-2">
+                                    <i class="fas fa-graduation-cap me-1"></i> Learning Center
+                                </a>
+                                <a href="{{ url_for('sustainability.index') }}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-leaf me-1"></i> Sustainability
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="row">
+        <!-- Left Column - Farm Status -->
+        <div class="col-lg-8">
+            <!-- Weather Widget -->
+            <div class="card mb-4 shadow-sm border-0 bg-dark">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-cloud-sun me-2"></i> Weather Forecast</h5>
+                        <div class="badge bg-light text-dark">
+                            <i class="fas fa-sync-alt me-1"></i> Updated 10 minutes ago
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body bg-dark text-white p-0">
+                    <div id="weatherWidget" class="p-3">
+                        <!-- Weather widget will be loaded here via JavaScript -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading weather data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Soil Health and Crop Status -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4 shadow-sm border-0">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-flask me-2"></i> Soil Health</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="soil-gauges">
+                                <div class="row text-center g-3">
+                                    <div class="col-6">
+                                        <div class="gauge-container">
+                                            <div class="gauge moisture" data-value="65">
+                                                <div class="gauge-arrow"></div>
+                                            </div>
+                                            <div class="gauge-label">Moisture</div>
+                                            <div class="gauge-value">65%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="gauge-container">
+                                            <div class="gauge ph" data-value="70">
+                                                <div class="gauge-arrow"></div>
+                                            </div>
+                                            <div class="gauge-label">pH Level</div>
+                                            <div class="gauge-value">6.8</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row text-center g-3 mt-2">
+                                    <div class="col-4">
+                                        <div class="nutrient-level">
+                                            <div class="nutrient-label">Nitrogen</div>
+                                            <div class="progress mt-1" style="height: 10px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+                                            </div>
+                                            <div class="small mt-1">120 ppm</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="nutrient-level">
+                                            <div class="nutrient-label">Phosphorus</div>
+                                            <div class="progress mt-1" style="height: 10px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 60%"></div>
+                                            </div>
+                                            <div class="small mt-1">45 ppm</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="nutrient-level">
+                                            <div class="nutrient-label">Potassium</div>
+                                            <div class="progress mt-1" style="height: 10px;">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 80%"></div>
+                                            </div>
+                                            <div class="small mt-1">180 ppm</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-success mt-3 mb-0">
+                                    <i class="fas fa-check-circle me-2"></i> Soil conditions are optimal for current crops
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4 shadow-sm border-0">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-seedling me-2"></i> Crop Health</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="crop-health-widget">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="mb-0">NDVI Analysis</h6>
+                                    <div class="badge bg-primary">Latest Satellite: 2 days ago</div>
+                                </div>
+                                <div class="ndvi-visual mb-3 rounded overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1586094337122-a648e4aaccbc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="NDVI visualization">
+                                    <div class="ndvi-legend d-flex justify-content-between px-2 pt-1">
+                                        <span class="small">Poor</span>
+                                        <span class="small">Good</span>
+                                        <span class="small">Excellent</span>
+                                    </div>
+                                </div>
+                                <div class="crop-status-list">
+                                    <div class="crop-status-item d-flex justify-content-between align-items-center p-2 rounded mb-2" style="background-color: rgba(25, 135, 84, 0.1);">
+                                        <div class="d-flex align-items-center">
+                                            <span class="status-indicator bg-success rounded-circle me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Maize</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success">Healthy</span>
+                                        </div>
+                                    </div>
+                                    <div class="crop-status-item d-flex justify-content-between align-items-center p-2 rounded mb-2" style="background-color: rgba(255, 193, 7, 0.1);">
+                                        <div class="d-flex align-items-center">
+                                            <span class="status-indicator bg-warning rounded-circle me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Beans</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-warning text-dark">Moderate Issues</span>
+                                        </div>
+                                    </div>
+                                    <div class="crop-status-item d-flex justify-content-between align-items-center p-2 rounded" style="background-color: rgba(25, 135, 84, 0.1);">
+                                        <div class="d-flex align-items-center">
+                                            <span class="status-indicator bg-success rounded-circle me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Sweet Potatoes</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success">Healthy</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Recommendations and Activity -->
+        <div class="col-lg-4">
+            <!-- Recommendations Panel -->
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i> AI Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="recommendation-list">
+                        <div class="recommendation-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="priority-indicator bg-danger rounded-circle me-2 mt-1" style="width: 12px; height: 12px;"></div>
+                                <div>
+                                    <h6 class="mb-1">Irrigation Needed</h6>
+                                    <p class="small text-muted mb-2">Bean crop in North Field shows signs of water stress. Soil moisture at 30% - recommended level is 50-60%.</p>
+                                    <div class="recommendation-actions">
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-check me-1"></i> Mark as Done
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-calendar me-1"></i> Schedule
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="priority-indicator bg-warning rounded-circle me-2 mt-1" style="width: 12px; height: 12px;"></div>
+                                <div>
+                                    <h6 class="mb-1">Fertilizer Application</h6>
+                                    <p class="small text-muted mb-2">Maize crop requires nitrogen supplementation in the next 3-5 days for optimal growth during this development phase.</p>
+                                    <div class="recommendation-actions">
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-check me-1"></i> Mark as Done
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-calendar me-1"></i> Schedule
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="d-flex">
+                                <div class="priority-indicator bg-info rounded-circle me-2 mt-1" style="width: 12px; height: 12px;"></div>
+                                <div>
+                                    <h6 class="mb-1">Crop Rotation Planning</h6>
+                                    <p class="small text-muted mb-2">Begin planning for crop rotation after the current growing season. Recommended rotation: beans → sweet potatoes → maize.</p>
+                                    <div class="recommendation-actions">
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-check me-1"></i> Mark as Done
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-calendar me-1"></i> Schedule
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('main.recommendations') if 'main.recommendations' in url_for_map else '#' }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-list me-1"></i> View All Recommendations
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Achievements Panel -->
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i> Latest Achievements</h5>
+                        <a href="{{ url_for('main.learning_dashboard') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-external-link-alt me-1"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="achievements-list">
+                        <div class="row row-cols-2 g-2">
+                            {% for achievement in achievements[:4] %}
+                            <div class="col">
+                                <div class="achievement-badge p-2 rounded text-center h-100" style="background-color: rgba(13, 110, 253, 0.1);">
+                                    <div class="badge-icon rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 40px; height: 40px;">
+                                        {% if achievement.category == 'learning' %}
+                                            <i class="fas fa-book"></i>
+                                        {% elif achievement.category == 'platform' %}
+                                            <i class="fas fa-award"></i>
+                                        {% elif achievement.category == 'community' %}
+                                            <i class="fas fa-users"></i>
+                                        {% elif achievement.category == 'farming' %}
+                                            <i class="fas fa-seedling"></i>
+                                        {% else %}
+                                            <i class="fas fa-star"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="badge-name small fw-bold">{{ achievement.name }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex align-items-center p-3">
+                            <div class="activity-icon rounded-circle bg-primary text-white p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Earned Achievement</div>
+                                <div class="small text-muted">Completed "Soil Health Fundamentals" module</div>
+                                <div class="small text-muted">Today, 09:45 AM</div>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-center p-3">
+                            <div class="activity-icon rounded-circle bg-success text-white p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">New Satellite Image</div>
+                                <div class="small text-muted">New NDVI analysis available for North Field</div>
+                                <div class="small text-muted">Yesterday, 14:22 PM</div>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-center p-3">
+                            <div class="activity-icon rounded-circle bg-info text-white p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Community Interaction</div>
+                                <div class="small text-muted">Received 3 responses to your post about maize varieties</div>
+                                <div class="small text-muted">Yesterday, 10:37 AM</div>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-center p-3">
+                            <div class="activity-icon rounded-circle bg-warning text-dark p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Action Completed</div>
+                                <div class="small text-muted">Marked "Apply Fungicide" recommendation as complete</div>
+                                <div class="small text-muted">Apr 8, 16:05 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-history me-1"></i> View All Activity
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/weather-widget.js') }}"></script>
+<script>
+    // Initialize soil gauges
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gauge visualization logic
+        const gauges = document.querySelectorAll('.gauge');
+        gauges.forEach(gauge => {
+            const value = gauge.getAttribute('data-value');
+            const rotation = (value / 100) * 180; // 0-100% maps to 0-180 degrees
+            const arrow = gauge.querySelector('.gauge-arrow');
+            if (arrow) {
+                arrow.style.transform = `rotate(${rotation}deg)`;
+            }
+            
+            // Set color based on the value and gauge type
+            if (gauge.classList.contains('moisture')) {
+                if (value < 30) {
+                    gauge.style.borderColor = '#dc3545'; // Too dry
+                } else if (value > 80) {
+                    gauge.style.borderColor = '#0dcaf0'; // Too wet
+                } else {
+                    gauge.style.borderColor = '#198754'; // Optimal
+                }
+            } else if (gauge.classList.contains('ph')) {
+                if (value < 40) {
+                    gauge.style.borderColor = '#dc3545'; // Too acidic
+                } else if (value > 80) {
+                    gauge.style.borderColor = '#0dcaf0'; // Too alkaline
+                } else {
+                    gauge.style.borderColor = '#198754'; // Optimal
+                }
+            }
+        });
+    });
+</script>
+<style>
+    .welcome-banner {
+        background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1332&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    
+    /* Gauge styling */
+    .gauge-container {
+        margin-bottom: 10px;
+    }
+    
+    .gauge {
+        width: 120px;
+        height: 60px;
+        border: 10px solid #198754;
+        border-bottom: none;
+        border-top-left-radius: 120px;
+        border-top-right-radius: 120px;
+        position: relative;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    
+    .gauge-arrow {
+        position: absolute;
+        width: 2px;
+        height: 50px;
+        background-color: #212529;
+        bottom: 0;
+        left: 50%;
+        transform-origin: bottom center;
+        transform: rotate(0deg);
+        transition: transform 1s ease-out;
+    }
+    
+    .gauge-label {
+        font-weight: bold;
+        margin-top: 5px;
+    }
+    
+    .gauge-value {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    /* Weather widget styling */
+    .current-weather {
+        border-radius: 10px;
+    }
+    
+    .forecast-day {
+        transition: all 0.3s ease;
+    }
+    
+    .forecast-day:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .weather-icon {
+        text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+    
+    /* Activity styling */
+    .activity-icon {
+        flex-shrink: 0;
+    }
+    
+    /* Make dashboard more responsive */
+    @media (max-width: 992px) {
+        .gauge {
+            width: 100px;
+            height: 50px;
+        }
+        
+        .gauge-arrow {
+            height: 40px;
+        }
+    }
+</style>
+{% endblock %}

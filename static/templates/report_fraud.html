@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Climate-Smart Agriculture Platform | Report Fraud{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow mt-4 mb-5">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Report Fraudulent Activity</h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">
+                        Our platform takes fraud very seriously. If you've encountered suspicious activity, dishonest practices, or have been scammed by another user, please provide details below. 
+                        Your report will be sent directly to our fraud investigation team and relevant authorities if necessary.
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i> All reports are kept confidential. We may contact you for additional information.
+                    </div>
+                    
+                    <!-- Report Fraud Form -->
+                    <form action="{{ url_for('main.report_fraud') }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if success %}
+                        <div class="alert alert-success" role="alert">
+                            {{ success }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- About the report -->
+                        <h5 class="mt-4 mb-3">Report Details</h5>
+                        
+                        <div class="mb-3">
+                            <label for="report_type" class="form-label">Type of Fraud <span class="text-danger">*</span></label>
+                            <select class="form-select" id="report_type" name="report_type" required>
+                                <option value="" selected disabled>Select type of fraud</option>
+                                <option value="payment_fraud">Payment Fraud (Never received item after payment)</option>
+                                <option value="item_misrepresentation">Item Misrepresentation (Item different than described)</option>
+                                <option value="counterfeit">Counterfeit Products</option>
+                                <option value="account_hacking">Account Hacking or Identity Theft</option>
+                                <option value="price_scam">Price Scamming or Price Manipulation</option>
+                                <option value="other">Other Fraudulent Activity</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="user_reported" class="form-label">Username/Email of Person You're Reporting <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="user_reported" name="user_reported" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transaction_date" class="form-label">Date of Transaction/Incident <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="transaction_date" name="transaction_date" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transaction_id" class="form-label">Transaction/Listing ID (if applicable)</label>
+                            <input type="text" class="form-control" id="transaction_id" name="transaction_id">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount Involved (if applicable)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">KES</span>
+                                <input type="number" class="form-control" id="amount" name="amount" min="0" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Detailed Description of the Incident <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="description" name="description" rows="6" required placeholder="Please provide as much detail as possible about what happened, including any communication with the other party and the timeline of events."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="evidence" class="form-label">Evidence (screenshots, photos, etc.)</label>
+                            <input type="file" class="form-control" id="evidence" name="evidence" multiple>
+                            <div class="form-text">You can upload multiple files. Maximum 5MB per file. Supported formats: JPG, PNG, PDF.</div>
+                        </div>
+                        
+                        <!-- Contact for Law Enforcement -->
+                        <h5 class="mt-4 mb-3">Additional Information for Investigation</h5>
+                        
+                        <div class="mb-3">
+                            <label for="contact_phone" class="form-label">Phone Number for Investigation Follow-up <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="contact_phone" name="contact_phone" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="preferred_contact" class="form-label">Preferred Contact Method <span class="text-danger">*</span></label>
+                            <select class="form-select" id="preferred_contact" name="preferred_contact" required>
+                                <option value="email">Email</option>
+                                <option value="phone">Phone</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="authorize_report" name="authorize_report" required>
+                            <label class="form-check-label" for="authorize_report">
+                                I authorize the platform to share this report with relevant law enforcement agencies if necessary <span class="text-danger">*</span>
+                            </label>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="affirm_truthful" name="affirm_truthful" required>
+                            <label class="form-check-label" for="affirm_truthful">
+                                I affirm that all information provided is truthful and accurate to the best of my knowledge <span class="text-danger">*</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger w-100 mt-3">
+                            <i class="fas fa-paper-plane me-2"></i> Submit Fraud Report
+                        </button>
+                    </form>
+                    
+                    <!-- Fraud Prevention Tips -->
+                    <div class="mt-5">
+                        <h5><i class="fas fa-shield-alt me-2"></i>Tips to Avoid Fraud</h5>
+                        <ul>
+                            <li>Always communicate through our platform's messaging system</li>
+                            <li>Be wary of deals that seem too good to be true</li>
+                            <li>Verify user ratings and reviews before transactions</li>
+                            <li>Use secure payment methods offered through our platform</li>
+                            <li>Meet in public places for in-person transactions</li>
+                            <li>Report suspicious activity immediately</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide specific form fields based on fraud type
+    const reportType = document.getElementById('report_type');
+    const transactionId = document.getElementById('transaction_id');
+    const amountGroup = document.getElementById('amount').closest('.mb-3');
+    
+    reportType.addEventListener('change', function() {
+        // Reset visibility
+        transactionId.closest('.mb-3').style.display = 'block';
+        amountGroup.style.display = 'block';
+        
+        // Adjust based on report type
+        if (this.value === 'account_hacking') {
+            transactionId.closest('.mb-3').style.display = 'none';
+            amountGroup.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

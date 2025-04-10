@@ -1,0 +1,211 @@
+/* Responsive styles for Climate-Smart Agriculture Platform */
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575.98px) {
+    .sidebar {
+        width: 60px;
+    }
+    
+    .sidebar.show {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+    }
+    
+    .main-content.sidebar-shown {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+    }
+    
+    .sidebar .fs-4 {
+        font-size: 1rem !important;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .temperature {
+        font-size: 2rem !important;
+    }
+    
+    .weather-detail {
+        font-size: 0.8rem;
+    }
+    
+    #weatherMap, #farmMap, #satelliteMap {
+        height: 300px !important;
+    }
+    
+    .daily-forecast-item {
+        padding: 0.5rem !important;
+    }
+    
+    .max-temp, .min-temp {
+        display: block;
+    }
+    
+    /* Adjust the weather forecast columns */
+    .col-6.mb-3 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .sidebar {
+        width: 70px;
+    }
+    
+    .sidebar.show {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-left: 70px;
+        width: calc(100% - 70px);
+    }
+    
+    .main-content.sidebar-shown {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+    }
+    
+    .max-temp, .min-temp {
+        display: inline-block;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .sidebar {
+        width: 80px;
+    }
+    
+    .sidebar.show {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-left: 80px;
+        width: calc(100% - 80px);
+    }
+    
+    .main-content.sidebar-shown {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    /* Default desktop styles */
+}
+
+/* Generic responsive adjustments */
+@media (max-width: 767.98px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    /* Make tables responsive */
+    .table-responsive {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-y: hidden;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+    
+    /* Adjust card spacing */
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    /* Adjust font sizes */
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    /* Make buttons more tappable */
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Center align charts in small screens */
+    canvas {
+        margin: 0 auto;
+    }
+    
+    /* Make recommendation text more readable */
+    .recommendation-content {
+        font-size: 0.8rem;
+    }
+    
+    /* Adjust the navbar */
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Hide non-essential elements */
+    .d-xs-none {
+        display: none !important;
+    }
+}
+
+/* Portrait and Landscape orientation adjustments */
+@media (orientation: portrait) {
+    .row.equal-height > [class*='col-'] {
+        display: block;
+        margin-bottom: 15px;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .sidebar {
+        overflow-y: auto;
+    }
+    
+    .navbar {
+        padding: 0.3rem 1rem;
+    }
+    
+    .main-content {
+        padding-top: 0.5rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar, .navbar, .footer, .btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    body {
+        background-color: white;
+        color: black;
+    }
+}

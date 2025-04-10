@@ -1,0 +1,629 @@
+{% extends "base.html" %}
+
+{% block title %}Soil Monitoring | Climate-Smart Agriculture Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-seedling me-2"></i>
+                    <span class="translate" data-key="soil_monitoring">Soil Monitoring</span>
+                </h2>
+                <p class="card-text translate" data-key="soil_desc">Monitor soil health with real-time sensor data</p>
+                
+                <!-- Farm and Crop Selection -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="farmSelect" class="form-label translate" data-key="select_farm">Select Farm</label>
+                            <select class="form-select" id="farmSelect">
+                                <option value="1" {% if farm_id == '1' %}selected{% endif %}>Maize Farm (2.5 ha)</option>
+                                <option value="2" {% if farm_id == '2' %}selected{% endif %}>Rice Paddy (1.8 ha)</option>
+                                <option value="3" {% if farm_id == '3' %}selected{% endif %}>Mixed Crops (3.2 ha)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="cropTypeSelect" class="form-label translate" data-key="crop_type">Crop Type</label>
+                            <select class="form-select" id="cropTypeSelect">
+                                <option value="maize" {% if crop_type == 'maize' %}selected{% endif %}>Maize</option>
+                                <option value="rice" {% if crop_type == 'rice' %}selected{% endif %}>Rice</option>
+                                <option value="sorghum" {% if crop_type == 'sorghum' %}selected{% endif %}>Sorghum</option>
+                                <option value="millet" {% if crop_type == 'millet' %}selected{% endif %}>Millet</option>
+                                <option value="cassava" {% if crop_type == 'cassava' %}selected{% endif %}>Cassava</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="dateRangeSelect" class="form-label translate" data-key="date_range">Date Range</label>
+                            <select class="form-select" id="dateRangeSelect">
+                                <option value="1">Last 24 hours</option>
+                                <option value="7" selected>Last 7 days</option>
+                                <option value="30">Last 30 days</option>
+                                <option value="90">Last 3 months</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Soil Moisture Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tint me-2"></i>
+                    <span class="translate" data-key="soil_moisture">Soil Moisture</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if soil_data and moisture_analysis %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <canvas id="moistureGauge" width="150" height="150"></canvas>
+                            <h3 class="mt-2">{{ soil_data.data[-1].moisture|round|int }}%</h3>
+                            <p class="status-text">
+                                {% if moisture_analysis.moisture_status == 'Optimal' %}
+                                <span class="badge bg-success">{{ moisture_analysis.moisture_status }}</span>
+                                {% elif moisture_analysis.moisture_status == 'Under-watered' or moisture_analysis.moisture_status == 'Over-watered' %}
+                                <span class="badge bg-warning">{{ moisture_analysis.moisture_status }}</span>
+                                {% else %}
+                                <span class="badge bg-danger">{{ moisture_analysis.moisture_status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="moisture-stats">
+                            <div class="stat-item mb-2">
+                                <span class="stat-label translate" data-key="optimal_range">Optimal Range:</span>
+                                <span class="stat-value">{{ moisture_analysis.optimal_range[0] }}% - {{ moisture_analysis.optimal_range[1] }}%</span>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <span class="stat-label translate" data-key="min_moisture">Minimum:</span>
+                                <span class="stat-value">{{ moisture_analysis.minimum_moisture }}%</span>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <span class="stat-label translate" data-key="max_moisture">Maximum:</span>
+                                <span class="stat-value">{{ moisture_analysis.maximum_moisture }}%</span>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <span class="stat-label translate" data-key="average_moisture">Average:</span>
+                                <span class="stat-value">{{ moisture_analysis.average_moisture }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="soil-moisture-chart">
+                    <canvas id="soilMoistureChart" height="250"></canvas>
+                </div>
+                
+                <div class="moisture-recommendation mt-3">
+                    <h6 class="text-muted translate" data-key="recommendation">Recommendation</h6>
+                    <div class="alert 
+                        {% if 'Immediate irrigation' in moisture_analysis.recommendation %}
+                        alert-danger
+                        {% elif 'Irrigation recommended' in moisture_analysis.recommendation %}
+                        alert-warning
+                        {% else %}
+                        alert-info
+                        {% endif %}">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ moisture_analysis.recommendation }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="soil_data_unavailable">Soil data unavailable</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Soil Fertility Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-leaf me-2"></i>
+                    <span class="translate" data-key="soil_fertility">Soil Fertility</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if soil_data and fertility_analysis %}
+                <div class="fertility-summary mb-4">
+                    <div class="alert
+                        {% if fertility_analysis.overall_status == 'Good' %}
+                        alert-success
+                        {% elif fertility_analysis.overall_status == 'Fair' %}
+                        alert-warning
+                        {% else %}
+                        alert-danger
+                        {% endif %}">
+                        <i class="fas {% if fertility_analysis.overall_status == 'Good' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+                        <strong>{{ fertility_analysis.overall_status }}</strong> - {{ fertility_analysis.overall_recommendation }}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h6 class="text-muted mb-3 translate" data-key="nutrient_levels">Nutrient Levels</h6>
+                        <div class="nutrient-chart">
+                            <canvas id="nutrientChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nutrient-details">
+                    <div class="accordion" id="nutrientAccordion">
+                        <!-- Nitrogen -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="nitrogenHeading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#nitrogenCollapse" aria-expanded="true" aria-controls="nitrogenCollapse">
+                                    <i class="fas fa-flask me-2 text-primary"></i>
+                                    <span class="translate" data-key="nitrogen">Nitrogen</span>: 
+                                    <span class="ms-1 badge
+                                        {% if fertility_analysis.nutrients.nitrogen.status == 'Optimal' %}
+                                        bg-success
+                                        {% elif fertility_analysis.nutrients.nitrogen.status == 'High' or fertility_analysis.nutrients.nitrogen.status == 'Deficient' %}
+                                        bg-warning
+                                        {% else %}
+                                        bg-danger
+                                        {% endif %}">
+                                        {{ fertility_analysis.nutrients.nitrogen.status }}
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="nitrogenCollapse" class="accordion-collapse collapse show" aria-labelledby="nitrogenHeading" data-bs-parent="#nutrientAccordion">
+                                <div class="accordion-body">
+                                    <p>Current value: <strong>{{ fertility_analysis.nutrients.nitrogen.value }} ppm</strong></p>
+                                    <p>Optimal range: {{ fertility_analysis.nutrients.nitrogen.optimal_range[0] }} - {{ fertility_analysis.nutrients.nitrogen.optimal_range[1] }} ppm</p>
+                                    <p><strong>Recommendation:</strong> {{ fertility_analysis.nutrients.nitrogen.recommendation }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Phosphorus -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="phosphorusHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phosphorusCollapse" aria-expanded="false" aria-controls="phosphorusCollapse">
+                                    <i class="fas fa-flask me-2 text-success"></i>
+                                    <span class="translate" data-key="phosphorus">Phosphorus</span>: 
+                                    <span class="ms-1 badge
+                                        {% if fertility_analysis.nutrients.phosphorus.status == 'Optimal' %}
+                                        bg-success
+                                        {% elif fertility_analysis.nutrients.phosphorus.status == 'High' or fertility_analysis.nutrients.phosphorus.status == 'Deficient' %}
+                                        bg-warning
+                                        {% else %}
+                                        bg-danger
+                                        {% endif %}">
+                                        {{ fertility_analysis.nutrients.phosphorus.status }}
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="phosphorusCollapse" class="accordion-collapse collapse" aria-labelledby="phosphorusHeading" data-bs-parent="#nutrientAccordion">
+                                <div class="accordion-body">
+                                    <p>Current value: <strong>{{ fertility_analysis.nutrients.phosphorus.value }} ppm</strong></p>
+                                    <p>Optimal range: {{ fertility_analysis.nutrients.phosphorus.optimal_range[0] }} - {{ fertility_analysis.nutrients.phosphorus.optimal_range[1] }} ppm</p>
+                                    <p><strong>Recommendation:</strong> {{ fertility_analysis.nutrients.phosphorus.recommendation }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Potassium -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="potassiumHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#potassiumCollapse" aria-expanded="false" aria-controls="potassiumCollapse">
+                                    <i class="fas fa-flask me-2 text-warning"></i>
+                                    <span class="translate" data-key="potassium">Potassium</span>: 
+                                    <span class="ms-1 badge
+                                        {% if fertility_analysis.nutrients.potassium.status == 'Optimal' %}
+                                        bg-success
+                                        {% elif fertility_analysis.nutrients.potassium.status == 'High' or fertility_analysis.nutrients.potassium.status == 'Deficient' %}
+                                        bg-warning
+                                        {% else %}
+                                        bg-danger
+                                        {% endif %}">
+                                        {{ fertility_analysis.nutrients.potassium.status }}
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="potassiumCollapse" class="accordion-collapse collapse" aria-labelledby="potassiumHeading" data-bs-parent="#nutrientAccordion">
+                                <div class="accordion-body">
+                                    <p>Current value: <strong>{{ fertility_analysis.nutrients.potassium.value }} ppm</strong></p>
+                                    <p>Optimal range: {{ fertility_analysis.nutrients.potassium.optimal_range[0] }} - {{ fertility_analysis.nutrients.potassium.optimal_range[1] }} ppm</p>
+                                    <p><strong>Recommendation:</strong> {{ fertility_analysis.nutrients.potassium.recommendation }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- pH -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="phHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#phCollapse" aria-expanded="false" aria-controls="phCollapse">
+                                    <i class="fas fa-vial me-2 text-danger"></i>
+                                    <span class="translate" data-key="soil_ph">Soil pH</span>: 
+                                    <span class="ms-1 badge
+                                        {% if fertility_analysis.nutrients.ph.status == 'Optimal' %}
+                                        bg-success
+                                        {% elif fertility_analysis.nutrients.ph.status == 'Mildly Acidic' or fertility_analysis.nutrients.ph.status == 'Mildly Alkaline' %}
+                                        bg-warning
+                                        {% else %}
+                                        bg-danger
+                                        {% endif %}">
+                                        {{ fertility_analysis.nutrients.ph.status }}
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="phCollapse" class="accordion-collapse collapse" aria-labelledby="phHeading" data-bs-parent="#nutrientAccordion">
+                                <div class="accordion-body">
+                                    <p>Current value: <strong>{{ fertility_analysis.nutrients.ph.value }}</strong></p>
+                                    <p>Optimal range: {{ fertility_analysis.nutrients.ph.optimal_range[0] }} - {{ fertility_analysis.nutrients.ph.optimal_range[1] }}</p>
+                                    <p><strong>Recommendation:</strong> {{ fertility_analysis.nutrients.ph.recommendation }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="soil_data_unavailable">Soil data unavailable</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sensor Data Table -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-microchip me-2"></i>
+                    <span class="translate" data-key="sensor_readings">Sensor Readings</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if soil_data %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="translate" data-key="timestamp">Timestamp</th>
+                                <th class="translate" data-key="soil_moisture">Moisture (%)</th>
+                                <th class="translate" data-key="soil_temperature">Temperature (°C)</th>
+                                <th class="translate" data-key="soil_ph">pH</th>
+                                <th class="translate" data-key="soil_ec">EC (dS/m)</th>
+                                <th class="translate" data-key="nitrogen">N (ppm)</th>
+                                <th class="translate" data-key="phosphorus">P (ppm)</th>
+                                <th class="translate" data-key="potassium">K (ppm)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in soil_data.data[-10:] %}
+                            <tr {% if loop.first %}class="table-primary"{% endif %}>
+                                <td>{{ reading.timestamp|replace('T', ' ')|replace('Z', '') }}</td>
+                                <td>{{ reading.moisture }}</td>
+                                <td>{{ reading.temperature }}</td>
+                                <td>{{ reading.ph }}</td>
+                                <td>{{ reading.electrical_conductivity }}</td>
+                                <td>{{ reading.nitrogen }}</td>
+                                <td>{{ reading.phosphorus }}</td>
+                                <td>{{ reading.potassium }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="soil_data_unavailable">Soil data unavailable</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Soil Temperature Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-thermometer-half me-2"></i>
+                    <span class="translate" data-key="soil_temperature">Soil Temperature</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if soil_data %}
+                <div class="text-center mb-4">
+                    <div class="temperature-gauge">
+                        <canvas id="temperatureGauge" width="150" height="150"></canvas>
+                    </div>
+                    <h3 class="mt-2">{{ soil_data.data[-1].temperature|round(1) }}°C</h3>
+                </div>
+                
+                <div class="temperature-chart">
+                    <canvas id="soilTemperatureChart" height="200"></canvas>
+                </div>
+                
+                <div class="temperature-info mt-3">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <span class="stat-label translate" data-key="min_temp">Min</span>
+                                <span class="stat-value">{{ soil_data.data|map(attribute='temperature')|min|round(1) }}°C</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <span class="stat-label translate" data-key="max_temp">Max</span>
+                                <span class="stat-value">{{ soil_data.data|map(attribute='temperature')|max|round(1) }}°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span class="translate" data-key="soil_data_unavailable">Soil data unavailable</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize form selection
+    const farmSelect = document.getElementById('farmSelect');
+    const cropTypeSelect = document.getElementById('cropTypeSelect');
+    const dateRangeSelect = document.getElementById('dateRangeSelect');
+    
+    // Add event listeners to update the page when selections change
+    if (farmSelect && cropTypeSelect) {
+        farmSelect.addEventListener('change', function() {
+            window.location.href = `?farm_id=${this.value}&crop_type=${cropTypeSelect.value}`;
+        });
+        
+        cropTypeSelect.addEventListener('change', function() {
+            window.location.href = `?farm_id=${farmSelect.value}&crop_type=${this.value}`;
+        });
+    }
+    
+    {% if soil_data %}
+    // Extract soil data for charts
+    const timestamps = {{ soil_data.data|map(attribute='timestamp')|list|tojson }};
+    const moistureData = {{ soil_data.data|map(attribute='moisture')|list|tojson }};
+    const temperatureData = {{ soil_data.data|map(attribute='temperature')|list|tojson }};
+    
+    // Format timestamps to date-time
+    const formattedTimes = timestamps.map(timestamp => {
+        const date = new Date(timestamp);
+        return date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    });
+    
+    // Create soil moisture chart
+    if (document.getElementById('soilMoistureChart')) {
+        createSoilMoistureChart('soilMoistureChart', timestamps, moistureData);
+    }
+    
+    // Create soil temperature chart
+    if (document.getElementById('soilTemperatureChart')) {
+        new Chart(document.getElementById('soilTemperatureChart'), {
+            type: 'line',
+            data: {
+                labels: formattedTimes.filter((_, i) => i % 6 === 0),  // Show every 6th label
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: temperatureData.filter((_, i) => i % 6 === 0),  // Show every 6th data point
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    },
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Create moisture gauge
+    if (document.getElementById('moistureGauge')) {
+        const currentMoisture = {{ soil_data.data[-1].moisture }};
+        const optimalMin = {{ moisture_analysis.optimal_range[0] }};
+        const optimalMax = {{ moisture_analysis.optimal_range[1] }};
+        
+        let gaugeColor;
+        if (currentMoisture < optimalMin - 10 || currentMoisture > optimalMax + 10) {
+            gaugeColor = '#dc3545';  // Red for way off optimal
+        } else if (currentMoisture < optimalMin || currentMoisture > optimalMax) {
+            gaugeColor = '#ffc107';  // Yellow for slightly off optimal
+        } else {
+            gaugeColor = '#28a745';  // Green for optimal
+        }
+        
+        new Chart(document.getElementById('moistureGauge'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Moisture', ''],
+                datasets: [{
+                    data: [currentMoisture, 100 - currentMoisture],
+                    backgroundColor: [gaugeColor, 'rgba(200, 200, 200, 0.2)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Create temperature gauge
+    if (document.getElementById('temperatureGauge')) {
+        const currentTemp = {{ soil_data.data[-1].temperature }};
+        
+        let tempColor;
+        if (currentTemp < 15 || currentTemp > 35) {
+            tempColor = '#dc3545';  // Red for extreme temperatures
+        } else if (currentTemp < 20 || currentTemp > 30) {
+            tempColor = '#ffc107';  // Yellow for borderline temperatures
+        } else {
+            tempColor = '#28a745';  // Green for ideal temperatures
+        }
+        
+        new Chart(document.getElementById('temperatureGauge'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Temperature', ''],
+                datasets: [{
+                    data: [currentTemp, 50 - currentTemp],  // Scale to make visual between 0-50
+                    backgroundColor: [tempColor, 'rgba(200, 200, 200, 0.2)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Create nutrient bar chart
+    if (document.getElementById('nutrientChart')) {
+        const nutrients = ['Nitrogen', 'Phosphorus', 'Potassium'];
+        const nutrientValues = [
+            {{ fertility_analysis.nutrients.nitrogen.value }},
+            {{ fertility_analysis.nutrients.phosphorus.value }},
+            {{ fertility_analysis.nutrients.potassium.value }}
+        ];
+        const optimalMin = [
+            {{ fertility_analysis.nutrients.nitrogen.optimal_range[0] }},
+            {{ fertility_analysis.nutrients.phosphorus.optimal_range[0] }},
+            {{ fertility_analysis.nutrients.potassium.optimal_range[0] }}
+        ];
+        const optimalMax = [
+            {{ fertility_analysis.nutrients.nitrogen.optimal_range[1] }},
+            {{ fertility_analysis.nutrients.phosphorus.optimal_range[1] }},
+            {{ fertility_analysis.nutrients.potassium.optimal_range[1] }}
+        ];
+        
+        const optimalMid = optimalMin.map((min, i) => (min + optimalMax[i]) / 2);
+        
+        new Chart(document.getElementById('nutrientChart'), {
+            type: 'bar',
+            data: {
+                labels: nutrients,
+                datasets: [
+                    {
+                        label: 'Current Levels (ppm)',
+                        data: nutrientValues,
+                        backgroundColor: [
+                            nutrientValues[0] < optimalMin[0] || nutrientValues[0] > optimalMax[0] ? 'rgba(220, 53, 69, 0.7)' : 'rgba(40, 167, 69, 0.7)',
+                            nutrientValues[1] < optimalMin[1] || nutrientValues[1] > optimalMax[1] ? 'rgba(220, 53, 69, 0.7)' : 'rgba(40, 167, 69, 0.7)',
+                            nutrientValues[2] < optimalMin[2] || nutrientValues[2] > optimalMax[2] ? 'rgba(220, 53, 69, 0.7)' : 'rgba(40, 167, 69, 0.7)'
+                        ],
+                        borderColor: [
+                            nutrientValues[0] < optimalMin[0] || nutrientValues[0] > optimalMax[0] ? 'rgb(220, 53, 69)' : 'rgb(40, 167, 69)',
+                            nutrientValues[1] < optimalMin[1] || nutrientValues[1] > optimalMax[1] ? 'rgb(220, 53, 69)' : 'rgb(40, 167, 69)',
+                            nutrientValues[2] < optimalMin[2] || nutrientValues[2] > optimalMax[2] ? 'rgb(220, 53, 69)' : 'rgb(40, 167, 69)'
+                        ],
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Optimal Range',
+                        data: optimalMid,
+                        backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                        borderColor: 'rgba(23, 162, 184, 1)',
+                        borderWidth: 1,
+                        type: 'line',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Level (ppm)'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                const index = context.dataIndex;
+                                if (context.datasetIndex === 0) {
+                                    return `Optimal range: ${optimalMin[index]} - ${optimalMax[index]} ppm`;
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}
+
